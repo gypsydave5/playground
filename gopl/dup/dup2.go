@@ -12,11 +12,10 @@ import (
 )
 
 func main() {
-	counts := make(map[string]int)
-	linesInFiles := make(map[string][]string)
+	counts := make(map[string]map[string]int)
 	files := os.Args[1:]
 	if len(files) == 0 {
-		countLines(os.Stdin, counts, "stdin", linesInFiles)
+		countLines(os.Stdin, counts, "stdin")
 	} else {
 		for _, arg := range files {
 			f, err := os.Open(arg)
@@ -24,45 +23,40 @@ func main() {
 				fmt.Fprintf(os.Stderr, "dup2: %v\n", err)
 				continue
 			}
-			countLines(f, counts, arg, linesInFiles)
+			countLines(f, counts, arg)
 			f.Close()
 		}
 	}
-	printLinesRepeating(2, counts, linesInFiles)
+	printLinesRepeating(2, counts)
 }
 
 func printLinesRepeating(
 	threshold int,
-	counts map[string]int,
-	linesInFiles map[string][]string,
+	counts map[string]map[string]int,
 ) {
-	for line, n := range counts {
-		if n >= threshold {
-			fmt.Printf("%q\t%d\t%s\n", strings.Join(linesInFiles[line], ", "), n, line)
+	for line, fileMap := range counts {
+		var files []string
+		var total int
+		for file, count := range fileMap {
+			files = append(files, file)
+			total = total + count
+		}
+		if total >= threshold {
+			fmt.Printf("%s\t\t%d\t\t%s\n", strings.Join(files, ", "), total, line)
 		}
 	}
 }
 
 func countLines(
 	f *os.File,
-	counts map[string]int,
+	counts map[string]map[string]int,
 	arg string,
-	linesInFiles map[string][]string,
 ) {
 	input := bufio.NewScanner(f)
 	for input.Scan() {
-		counts[input.Text()]++
-		if !contains(linesInFiles[input.Text()], arg) {
-			linesInFiles[input.Text()] = append(linesInFiles[input.Text()], arg)
+		if counts[input.Text()] == nil {
+			counts[input.Text()] = make(map[string]int)
 		}
+		counts[input.Text()][arg]++
 	}
-}
-
-func contains(slice []string, str string) bool {
-	for _, s := range slice {
-		if s == str {
-			return true
-		}
-	}
-	return false
 }
