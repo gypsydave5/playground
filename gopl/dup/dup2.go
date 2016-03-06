@@ -11,6 +11,12 @@ import (
 	"strings"
 )
 
+type dupData struct {
+	files []string
+	line  string
+	total int
+}
+
 func main() {
 	counts := make(map[string]map[string]int)
 	files := os.Args[1:]
@@ -27,13 +33,13 @@ func main() {
 			f.Close()
 		}
 	}
-	printLinesRepeating(2, counts)
+	for _, dup := range linesRepeating(2, counts) {
+		printDups(dup)
+	}
 }
 
-func printLinesRepeating(
-	threshold int,
-	counts map[string]map[string]int,
-) {
+func linesRepeating(threshold int, counts map[string]map[string]int) []dupData {
+	var dups []dupData
 	for line, fileMap := range counts {
 		var files []string
 		var total int
@@ -42,9 +48,14 @@ func printLinesRepeating(
 			total = total + count
 		}
 		if total >= threshold {
-			fmt.Printf("%s\t\t%d\t\t%s\n", strings.Join(files, ", "), total, line)
+			dups = append(dups, dupData{files, line, total})
 		}
 	}
+	return dups
+}
+
+func printDups(d dupData) {
+	fmt.Printf("%s\t%d\t%s\n", strings.Join(d.files, ", "), d.total, d.line)
 }
 
 func countLines(
