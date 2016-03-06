@@ -8,6 +8,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"sort"
 	"strings"
 )
 
@@ -15,6 +16,20 @@ type dupData struct {
 	files []string
 	line  string
 	total int
+}
+
+type dupes []dupData
+
+func (ds dupes) Len() int {
+	return len(ds)
+}
+
+func (ds dupes) Less(i, j int) bool {
+	return ds[i].total > ds[j].total
+}
+
+func (ds dupes) Swap(i, j int) {
+	ds[i], ds[j] = ds[j], ds[i]
 }
 
 func main() {
@@ -39,7 +54,7 @@ func main() {
 }
 
 func linesRepeating(threshold int, counts map[string]map[string]int) []dupData {
-	var dups []dupData
+	var dups dupes
 	for line, fileMap := range counts {
 		var files []string
 		var total int
@@ -51,6 +66,7 @@ func linesRepeating(threshold int, counts map[string]map[string]int) []dupData {
 			dups = append(dups, dupData{files, line, total})
 		}
 	}
+	sort.Sort(dups)
 	return dups
 }
 
