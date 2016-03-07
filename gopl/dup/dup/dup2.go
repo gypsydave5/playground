@@ -10,27 +10,9 @@ import (
 	"os"
 	"sort"
 	"strings"
+
+	"github.com/gypsydave5/playground/gopl/dup/dupes"
 )
-
-type dupData struct {
-	files []string
-	line  string
-	total int
-}
-
-type dupes []dupData
-
-func (ds dupes) Len() int {
-	return len(ds)
-}
-
-func (ds dupes) Less(i, j int) bool {
-	return ds[i].total > ds[j].total
-}
-
-func (ds dupes) Swap(i, j int) {
-	ds[i], ds[j] = ds[j], ds[i]
-}
 
 func main() {
 	counts := make(map[string]map[string]int)
@@ -53,8 +35,8 @@ func main() {
 	}
 }
 
-func linesRepeating(threshold int, counts map[string]map[string]int) []dupData {
-	var dups dupes
+func linesRepeating(threshold int, counts map[string]map[string]int) dupes.Dupes {
+	var dups dupes.Dupes
 	for line, fileMap := range counts {
 		var files []string
 		var total int
@@ -63,15 +45,19 @@ func linesRepeating(threshold int, counts map[string]map[string]int) []dupData {
 			total = total + count
 		}
 		if total >= threshold {
-			dups = append(dups, dupData{files, line, total})
+			dups = append(dups, dupes.Dup{
+				Files: files,
+				Line:  line,
+				Total: total,
+			})
 		}
 	}
 	sort.Sort(dups)
 	return dups
 }
 
-func printDups(d dupData) {
-	fmt.Printf("%s\t%d\t%s\n", strings.Join(d.files, ", "), d.total, d.line)
+func printDups(d dupes.Dup) {
+	fmt.Printf("%s\t%d\t%s\n", strings.Join(d.Files, ", "), d.Total, d.Line)
 }
 
 func countLines(
