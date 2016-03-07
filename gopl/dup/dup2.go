@@ -10,8 +10,6 @@ import (
 	"os"
 	"sort"
 	"strings"
-
-	"github.com/gypsydave5/playground/gopl/dup/dupes"
 )
 
 func main() {
@@ -35,8 +33,8 @@ func main() {
 	}
 }
 
-func linesRepeating(threshold int, counts map[string]map[string]int) dupes.Dupes {
-	var dups dupes.Dupes
+func linesRepeating(threshold int, counts map[string]map[string]int) dupes {
+	var dups dupes
 	for line, fileMap := range counts {
 		var files []string
 		var total int
@@ -45,10 +43,10 @@ func linesRepeating(threshold int, counts map[string]map[string]int) dupes.Dupes
 			total = total + count
 		}
 		if total >= threshold {
-			dups = append(dups, dupes.Dup{
-				Files: files,
-				Line:  line,
-				Total: total,
+			dups = append(dups, dup{
+				files: files,
+				line:  line,
+				total: total,
 			})
 		}
 	}
@@ -56,8 +54,8 @@ func linesRepeating(threshold int, counts map[string]map[string]int) dupes.Dupes
 	return dups
 }
 
-func printDups(d dupes.Dup) {
-	fmt.Printf("%s\t%d\t%s\n", strings.Join(d.Files, ", "), d.Total, d.Line)
+func printDups(d dup) {
+	fmt.Printf("%s\t%d\t%s\n", strings.Join(d.files, ", "), d.total, d.line)
 }
 
 func countLines(
