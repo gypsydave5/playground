@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
@@ -41,17 +40,15 @@ func TestMakingGoodHTTP(t *testing.T) {
 		}))
 	defer ts.Close()
 
-	resp, _ := fetch(ts.URL)
-	b, _ := ioutil.ReadAll(resp.Body)
+	b, _, _ := fetch(ts.URL)
 
-	resp.Body.Close()
 	if string(b) != expectation {
 		t.Errorf(`expected %q, got %q`, expectation, string(b))
 	}
 }
 
 func TestMakingBadHTTP(t *testing.T) {
-	_, err := fetch("http://badbadurl")
+	_, _, err := fetch("http://badbadurl")
 	if err == nil {
 		t.Errorf(`expected fetch to error when there's no server`)
 	}
@@ -68,13 +65,11 @@ func TestFetchingMany(t *testing.T) {
 	defer ts.Close()
 
 	urls := []string{ts.URL + "/first", ts.URL + "/second"}
-	resps, _ := fetchMany(urls)
-	b1, _ := ioutil.ReadAll(resps[0].Body)
-	b2, _ := ioutil.ReadAll(resps[1].Body)
-	if string(b1) != "Call number 1" {
-		t.Errorf(`expected %q, got %q`, "Call number 1", string(b1))
+	bodies, _ := fetchMany(urls)
+	if bodies[0] != "Call number 1" {
+		t.Errorf(`expected %q, got %q`, "Call number 1", bodies[0])
 	}
-	if string(b2) != "Call number 2" {
-		t.Errorf(`expected %q, got %q`, "Call number 2", string(b2))
+	if bodies[1] != "Call number 2" {
+		t.Errorf(`expected %q, got %q`, "Call number 2", bodies[1])
 	}
 }
