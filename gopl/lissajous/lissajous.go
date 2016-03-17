@@ -1,4 +1,4 @@
-package main
+package lissajous
 
 import (
 	"image"
@@ -7,7 +7,6 @@ import (
 	"io"
 	"math"
 	"math/rand"
-	"os"
 )
 
 var palette = []color.Color{
@@ -22,18 +21,22 @@ const (
 	redIndex   = 2
 )
 
-func main() {
-	lissajous(os.Stdout)
+//Options provides options for the Lissajous generator
+type Options struct {
+	Cycles     float64
+	Resolution float64
+	Size       int
+	Frames     int
+	Delay      int
 }
 
-func lissajous(out io.Writer) {
-	const (
-		cycles  = 5     // number of complete x oscillator revolutions
-		res     = 0.001 // angular resolution
-		size    = 100   // image canvas covers [-size..+size]
-		nframes = 64    // number of animation frames
-		delay   = 8     // delay between frames in 10ms units
-	)
+//Lissajous generates a Lissajous animation
+func Lissajous(out io.Writer, o Options) {
+	cycles := o.Cycles           // number of complete x oscillator revolutions
+	res := o.Resolution          // angular resolution
+	size := o.Size               // image canvas covers [-size..+size]
+	nframes := o.Frames          // number of animation frames
+	delay := o.Delay             // delay between frames in 10ms units
 	freq := rand.Float64() * 3.0 // relative frequency of y oscillator
 	anim := gif.GIF{LoopCount: nframes}
 	phase := 0.0 //phase difference
@@ -49,7 +52,7 @@ func lissajous(out io.Writer) {
 		for t := 0.0; t < cycles*2*math.Pi; t += res {
 			x := math.Sin(t)
 			y := math.Sin(t*freq + phase)
-			img.SetColorIndex(size+int(x*size+0.5), size+int(y*size+0.5), colorIndex)
+			img.SetColorIndex(size+int(x*float64(size)+0.5), size+int(y*float64(size)+0.5), colorIndex)
 		}
 		phase += 0.1
 		anim.Delay = append(anim.Delay, delay)
