@@ -6,7 +6,6 @@ import (
 	"image/gif"
 	"io"
 	"math"
-	"math/rand"
 )
 
 var palette = []color.Color{
@@ -21,23 +20,31 @@ const (
 	redIndex   = 2
 )
 
-//Options provides options for the Lissajous generator
+// Options provides options for the Lissajous generator
+// Cycles: number of complete x oscillator revolutions
+// Resolution: angular resolution
+// Size: image canvas covers [-size..+size]
+// Frames: number of animation frames
+// Delay: delay between frames in 10ms units
+// Frequencey: relative frequency of y oscillator
 type Options struct {
 	Cycles     float64
 	Resolution float64
 	Size       int
 	Frames     int
 	Delay      int
+	Frequency  float64
 }
 
 //Lissajous generates a Lissajous animation
 func Lissajous(out io.Writer, o Options) {
-	cycles := o.Cycles           // number of complete x oscillator revolutions
-	res := o.Resolution          // angular resolution
-	size := o.Size               // image canvas covers [-size..+size]
-	nframes := o.Frames          // number of animation frames
-	delay := o.Delay             // delay between frames in 10ms units
-	freq := rand.Float64() * 3.0 // relative frequency of y oscillator
+	cycles := o.Cycles
+	res := o.Resolution
+	size := o.Size
+	nframes := o.Frames
+	delay := o.Delay
+	freq := o.Frequency
+
 	anim := gif.GIF{LoopCount: nframes}
 	phase := 0.0 //phase difference
 	for i := 0; i < nframes; i++ {
