@@ -6,7 +6,7 @@ import (
 	"math/rand"
 	"os"
 
-	"github.com/gypsydave5/playground/gopl/lissajous"
+	"github.com/gypsydave5/playground/gopl/chapter1/lissajous"
 )
 
 var cycles = flag.Float64("cycles", 5.0, "number of complete x oscillator revolutions")

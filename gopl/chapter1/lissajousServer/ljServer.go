@@ -1,12 +1,13 @@
 package main
 
 import (
-	"github.com/gypsydave5/playground/gopl/lissajous"
 	"log"
 	"math/rand"
 	"net/http"
 	"net/url"
 	"strconv"
+
+	"github.com/gypsydave5/playground/gopl/chapter1/lissajous"
 )
 
 func main() {
