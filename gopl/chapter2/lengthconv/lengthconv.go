@@ -14,12 +14,12 @@ const MToFRatio = 0.3048
 
 // Prints meters with a "m" unit suffix
 func (m Meter) String() string {
-	return fmt.Sprintf("%gm", m)
+	return fmt.Sprintf("%g m", m)
 }
 
 // Prints Feet with a "ft" unit suffix
 func (f Foot) String() string {
-	return fmt.Sprintf("%gft", f)
+	return fmt.Sprintf("%g ft", f)
 }
 
 // FToM converts feet to meters

@@ -18,14 +18,14 @@ func TestMToF(t *testing.T) {
 
 func TestMeterString(t *testing.T) {
 	m := Meter(50).String()
-	if m != "50m" {
-		t.Errorf("Expected 50m, got %v", m)
+	if m != "50 m" {
+		t.Errorf("Expected 50 m, got %v", m)
 	}
 }
 
 func TestFootString(t *testing.T) {
 	f := Foot(6).String()
-	if f != "6ft" {
-		t.Errorf("Expected 6ft, got %v", f)
+	if f != "6 ft" {
+		t.Errorf("Expected 6 ft, got %v", f)
 	}
 }
