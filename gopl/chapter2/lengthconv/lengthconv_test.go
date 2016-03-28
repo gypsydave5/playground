@@ -9,9 +9,23 @@ func TestFToM(t *testing.T) {
 	}
 }
 
+func TestMToF(t *testing.T) {
+	f := MToF(Meter(1))
+	if f != 0.3048 {
+		t.Errorf("Expected 0.3048, got %v", f)
+	}
+}
+
 func TestMeterString(t *testing.T) {
 	m := Meter(50).String()
 	if m != "50m" {
 		t.Errorf("Expected 50m, got %v", m)
+	}
+}
+
+func TestFootString(t *testing.T) {
+	f := Foot(6).String()
+	if f != "6ft" {
+		t.Errorf("Expected 6ft, got %v", f)
 	}
 }
