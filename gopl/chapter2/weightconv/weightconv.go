@@ -4,6 +4,9 @@ package weightconv
 
 import "fmt"
 
+// PToKRatio represents the ration of pounds to kilograms. 1lb == 0.45359237kg
+const PToKRatio = 0.45359237
+
 // Kilogram is a representation of the weight kilograms.
 type Kilogram float64
 
@@ -12,12 +15,12 @@ type Pound float64
 
 // PToK converts pounds into kilograms.
 func PToK(p Pound) Kilogram {
-	return Kilogram(p * 0.45359237)
+	return Kilogram(p * PToKRatio)
 }
 
 // KToP converts kilograms into pounds.
 func KToP(k Kilogram) Pound {
-	return Pound(k / 0.45359237)
+	return Pound(k / PToKRatio)
 }
 
 // Returns the string representation of the value of Pound with the unit "lb" appended.
