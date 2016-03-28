@@ -10,7 +10,7 @@ type Meter float64
 type Foot float64
 
 // MToFRatio is the ratio of meters to feet; 1m == 0.3048ft
-const MToFRatio float64 = 0.3048
+const MToFRatio = 0.3048
 
 // Prints meters with a "m" unit suffix
 func (m Meter) String() string {
@@ -24,10 +24,10 @@ func (f Foot) String() string {
 
 // FToM converts feet to meters
 func FToM(f Foot) Meter {
-	return Meter(f / Foot(MToFRatio))
+	return Meter(f / MToFRatio)
 }
 
 // MToF converts Meters to Feet
 func MToF(m Meter) Foot {
-	return Foot(m * Meter(MToFRatio))
+	return Foot(m * MToFRatio)
 }
