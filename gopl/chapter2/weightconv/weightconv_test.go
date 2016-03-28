@@ -18,14 +18,14 @@ func TestKToP(t *testing.T) {
 
 func TestPoundString(t *testing.T) {
 	p := Pound(1).String()
-	if p != "1lb" {
-		t.Errorf("Expected \"1lb\", got %v", p)
+	if p != "1 lb" {
+		t.Errorf("Expected \"1 lb\", got %v", p)
 	}
 }
 
 func TestKilogramString(t *testing.T) {
 	k := Kilogram(5).String()
-	if k != "5kg" {
-		t.Errorf("Expected 5kg, got %v", k)
+	if k != "5 kg" {
+		t.Errorf("Expected 5 kg, got %v", k)
 	}
 }

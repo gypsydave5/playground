@@ -25,10 +25,10 @@ func KToP(k Kilogram) Pound {
 
 // Returns the string representation of the value of Pound with the unit "lb" appended.
 func (p Pound) String() string {
-	return fmt.Sprintf("%glb", p)
+	return fmt.Sprintf("%g lb", p)
 }
 
 // Return the staing representation of the kilogram with the untit "kg" appended.
 func (k Kilogram) String() string {
-	return fmt.Sprintf("%gkg", k)
+	return fmt.Sprintf("%g kg", k)
 }
