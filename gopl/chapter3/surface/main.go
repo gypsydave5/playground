@@ -6,6 +6,9 @@ import (
 	"math"
 )
 
+type corner func(int, int) (float64, float64, error)
+type graphFun func(float64, float64) float64
+
 const (
 	width, height = 600, 320            // canvas size in pixels
 	cells         = 100                 // number of grid cells
@@ -47,7 +50,7 @@ func main() {
 	fmt.Println("</svg>")
 }
 
-func fMapper(f func(float64, float64) float64) func(int, int) (float64, float64, error) {
+func fMapper(f graphFun) corner {
 	return func(i, j int) (float64, float64, error) {
 		var err error
 		// Find point (x,y) at corner of cell (i,j).
@@ -58,7 +61,7 @@ func fMapper(f func(float64, float64) float64) func(int, int) (float64, float64,
 		z := f(x, y)
 
 		if math.Abs(z) == math.Inf(1) {
-			err = fmt.Errorf("function created an infinite result with (%v, %v)", x, y)
+			err = fmt.Errorf("infinite result with args (%v, %v)", x, y)
 			return x, y, err
 		}
 
@@ -70,6 +73,5 @@ func fMapper(f func(float64, float64) float64) func(int, int) (float64, float64,
 }
 
 func f(x, y float64) float64 {
-	r := math.Hypot(x, y) //distance from (0,0)
-	return math.Sin(r) / r
+	return (math.Sin(x/2) * math.Cos(y/2)) / 4
 }
