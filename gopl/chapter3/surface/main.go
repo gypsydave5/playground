@@ -73,5 +73,5 @@ func fMapper(f graphFun) corner {
 }
 
 func f(x, y float64) float64 {
-	return (math.Sin(x/2) * math.Cos(y/2)) / 4
+	return math.Cos(math.Abs(x)+math.Abs(y)) / 8
 }
