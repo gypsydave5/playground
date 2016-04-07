@@ -6,7 +6,7 @@ import (
 	"math"
 )
 
-type corner func(int, int) (float64, float64, error)
+type corner func(int, int) (float64, float64, float64, error)
 type graphFun func(float64, float64) float64
 
 const (
@@ -27,31 +27,51 @@ func main() {
 		"width='%d' height='%d'>", width, height)
 	for i := 0; i < cells; i++ {
 		for j := 0; j < cells; j++ {
-			ax, ay, err := corner(i+1, j)
+			x, y, z, err := corner(i+1, j)
 			if err != nil {
 				continue
 			}
-			bx, by, err := corner(i, j)
+			ax, ay := project(x, y, z)
+			x, y, z, err = corner(i, j)
 			if err != nil {
 				continue
 			}
-			cx, cy, err := corner(i, j+1)
+			bx, by := project(x, y, z)
+			x, y, z, err = corner(i, j+1)
 			if err != nil {
 				continue
 			}
-			dx, dy, err := corner(i+1, j+1)
+			cx, cy := project(x, y, z)
+			x, y, z, err = corner(i+1, j+1)
 			if err != nil {
 				continue
 			}
-			fmt.Printf("<polygon points='%g,%g %g,%g %g,%g %g,%g'/>\n",
-				ax, ay, bx, by, cx, cy, dx, dy)
+			dx, dy := project(x, y, z)
+
+			colorR := math.Floor(255 * z)
+			colorG := math.Floor(255 - math.Abs((255 * z)))
+			colorB := math.Floor(255 * z)
+			var bR, bG, bB byte
+
+			if colorR > 0 {
+				bR = byte(colorR)
+			}
+			if colorB < 0 {
+				bB = byte(math.Abs(colorB))
+			}
+			bG = byte(colorG)
+
+			color := fmt.Sprintf("#%02X%02x%02X", bR, bG, bB)
+			fmt.Printf("<!-- (%v) %v %v %v -->", z, colorR, colorG, colorB)
+			fmt.Printf("<polygon points='%g,%g %g,%g %g,%g %g,%g' fill='%v'/>\n",
+				ax, ay, bx, by, cx, cy, dx, dy, color)
 		}
 	}
 	fmt.Println("</svg>")
 }
 
 func fMapper(f graphFun) corner {
-	return func(i, j int) (float64, float64, error) {
+	return func(i, j int) (float64, float64, float64, error) {
 		var err error
 		// Find point (x,y) at corner of cell (i,j).
 		x := xyrange * (float64(i)/cells - 0.5)
@@ -62,16 +82,23 @@ func fMapper(f graphFun) corner {
 
 		if math.Abs(z) == math.Inf(1) {
 			err = fmt.Errorf("infinite result with args (%v, %v)", x, y)
-			return x, y, err
+			return x, y, z, err
 		}
 
 		// Project (x,y,z) isometrically onto a 2-D SVG canvas (sx,sy).
-		sx := width/2 + (x-y)*cos30*xyscale
-		sy := height/2 + (x+y)*sin30*xyscale - z*zscale
-		return sx, sy, err
+		return x, y, z, err
 	}
 }
 
+func project(x, y, z float64) (sx, sy float64) {
+	sx = width/2 + (x-y)*cos30*xyscale
+	sy = height/2 + (x+y)*sin30*xyscale - z*zscale
+	return
+}
+
 func f(x, y float64) float64 {
-	return math.Log(math.Abs(x)+math.Abs(y)) / 8
+	//return (math.Sin(x) * math.Cos(y)) / 4
+	//return math.Cos(math.Abs(x)+math.Abs(y)) / 8
+	r := math.Hypot(x, y) // distance from (0,0)
+	return math.Sin(r) / r
 }
