@@ -46,7 +46,7 @@ func main() {
 				continue
 			}
 
-			color := zColorHex(1, -1, p.z)
+			color := hexColorByRange(1, -1, p.z)
 
 			fmt.Printf("<polygon points='%g,%g %g,%g %g,%g %g,%g' fill='%v'/>\n",
 				p.ax, p.ay, p.bx, p.by, p.cx, p.cy, p.dx, p.dy, color)
@@ -118,23 +118,4 @@ func f(x, y float64) float64 {
 	//return math.Cos(math.Abs(x)+math.Abs(y)) / 8
 	r := math.Hypot(x, y) // distance from (0,0)
 	return math.Sin(r) / r
-}
-
-func zColorHex(maxZ, minZ, z float64) string {
-	midPt := (maxZ - minZ) / 2
-	r := math.Floor(255 * (z / midPt))
-	g := math.Floor(255 - math.Abs(255*(z/midPt)))
-	b := math.Floor(255 * (z / midPt))
-
-	var bR, bG, bB byte
-	if r > 0 {
-		bR = byte(r)
-	}
-	bG = byte(g)
-	if b < 0 {
-		bB = byte(math.Abs(b))
-	}
-
-	color := fmt.Sprintf("#%02X%02X%02X", bR, bG, bB)
-	return color
 }
