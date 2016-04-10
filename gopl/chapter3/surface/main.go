@@ -8,6 +8,19 @@ import (
 
 type corner func(int, int) (float64, float64, float64, error)
 type graphFun func(float64, float64) float64
+type newPolygon func(int, int) polygon
+type polygon struct {
+	ax  float64
+	ay  float64
+	bx  float64
+	by  float64
+	cx  float64
+	cy  float64
+	dx  float64
+	dy  float64
+	z   float64
+	err error
+}
 
 const (
 	width, height = 600, 320            // canvas size in pixels
@@ -22,37 +35,21 @@ var sin30, cos30 = math.Sin(angle), math.Cos(angle) // sin(30°), cos(30°)
 
 func main() {
 	corner := fMapper(f)
+	newPolygon := newPolygonGen(corner)
 	fmt.Printf("<svg xmlns='http://www.w3.org/2000/svg' "+
 		"style='stroke: grey; fill: white; stroke-width: 0.7' "+
 		"width='%d' height='%d'>", width, height)
 	for i := 0; i < cells; i++ {
 		for j := 0; j < cells; j++ {
-			x, y, z, err := corner(i+1, j)
-			if err != nil {
+			p := newPolygon(i, j)
+			if p.err != nil {
 				continue
 			}
-			ax, ay := project(x, y, z)
-			x, y, z, err = corner(i, j)
-			if err != nil {
-				continue
-			}
-			bx, by := project(x, y, z)
-			x, y, z, err = corner(i, j+1)
-			if err != nil {
-				continue
-			}
-			cx, cy := project(x, y, z)
-			x, y, z, err = corner(i+1, j+1)
-			if err != nil {
-				continue
-			}
-			dx, dy := project(x, y, z)
 
-			colorR := math.Floor(255 * z)
-			colorG := math.Floor(255 - math.Abs((255 * z)))
-			colorB := math.Floor(255 * z)
+			colorR := math.Floor(255 * p.z)
+			colorG := math.Floor(255 - math.Abs((255 * p.z)))
+			colorB := math.Floor(255 * p.z)
 			var bR, bG, bB byte
-
 			if colorR > 0 {
 				bR = byte(colorR)
 			}
@@ -62,12 +59,49 @@ func main() {
 			bG = byte(colorG)
 
 			color := fmt.Sprintf("#%02X%02x%02X", bR, bG, bB)
-			fmt.Printf("<!-- (%v) %v %v %v -->", z, colorR, colorG, colorB)
+
+			fmt.Printf("<!-- (%v) %v %v %v -->", p.z, colorR, colorG, colorB)
 			fmt.Printf("<polygon points='%g,%g %g,%g %g,%g %g,%g' fill='%v'/>\n",
-				ax, ay, bx, by, cx, cy, dx, dy, color)
+				p.ax, p.ay, p.bx, p.by, p.cx, p.cy, p.dx, p.dy, color)
 		}
 	}
 	fmt.Println("</svg>")
+}
+
+func newPolygonGen(c corner) newPolygon {
+	return func(i, j int) polygon {
+		p := polygon{}
+		x, y, z, err := c(i+1, j)
+		if err != nil {
+			p.err = err
+			return p
+		}
+		p.ax, p.ay = project(x, y, z)
+		p.z = z
+
+		x, y, z, err = c(i, j)
+		if err != nil {
+			p.err = err
+			return p
+		}
+		p.bx, p.by = project(x, y, z)
+
+		x, y, z, err = c(i, j+1)
+		if err != nil {
+			p.err = err
+			return p
+		}
+		p.cx, p.cy = project(x, y, z)
+
+		x, y, z, err = c(i+1, j+1)
+		if err != nil {
+			p.err = err
+			return p
+		}
+		p.dx, p.dy = project(x, y, z)
+
+		return p
+	}
 }
 
 func fMapper(f graphFun) corner {
