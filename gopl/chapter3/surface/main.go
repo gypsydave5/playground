@@ -46,21 +46,8 @@ func main() {
 				continue
 			}
 
-			colorR := math.Floor(255 * p.z)
-			colorG := math.Floor(255 - math.Abs((255 * p.z)))
-			colorB := math.Floor(255 * p.z)
-			var bR, bG, bB byte
-			if colorR > 0 {
-				bR = byte(colorR)
-			}
-			if colorB < 0 {
-				bB = byte(math.Abs(colorB))
-			}
-			bG = byte(colorG)
+			color := zColorHex(1, -1, p.z)
 
-			color := fmt.Sprintf("#%02X%02x%02X", bR, bG, bB)
-
-			fmt.Printf("<!-- (%v) %v %v %v -->", p.z, colorR, colorG, colorB)
 			fmt.Printf("<polygon points='%g,%g %g,%g %g,%g %g,%g' fill='%v'/>\n",
 				p.ax, p.ay, p.bx, p.by, p.cx, p.cy, p.dx, p.dy, color)
 		}
@@ -78,28 +65,24 @@ func newPolygonGen(c corner) newPolygon {
 		}
 		p.ax, p.ay = project(x, y, z)
 		p.z = z
-
 		x, y, z, err = c(i, j)
 		if err != nil {
 			p.err = err
 			return p
 		}
 		p.bx, p.by = project(x, y, z)
-
 		x, y, z, err = c(i, j+1)
 		if err != nil {
 			p.err = err
 			return p
 		}
 		p.cx, p.cy = project(x, y, z)
-
 		x, y, z, err = c(i+1, j+1)
 		if err != nil {
 			p.err = err
 			return p
 		}
 		p.dx, p.dy = project(x, y, z)
-
 		return p
 	}
 }
@@ -135,4 +118,23 @@ func f(x, y float64) float64 {
 	//return math.Cos(math.Abs(x)+math.Abs(y)) / 8
 	r := math.Hypot(x, y) // distance from (0,0)
 	return math.Sin(r) / r
+}
+
+func zColorHex(maxZ, minZ, z float64) string {
+	midPt := (maxZ - minZ) / 2
+	r := math.Floor(255 * (z / midPt))
+	g := math.Floor(255 - math.Abs(255*(z/midPt)))
+	b := math.Floor(255 * (z / midPt))
+
+	var bR, bG, bB byte
+	if r > 0 {
+		bR = byte(r)
+	}
+	bG = byte(g)
+	if b < 0 {
+		bB = byte(math.Abs(b))
+	}
+
+	color := fmt.Sprintf("#%02X%02X%02X", bR, bG, bB)
+	return color
 }
