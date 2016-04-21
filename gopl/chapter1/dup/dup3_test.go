@@ -1,8 +1,11 @@
 package main
 
-import "testing"
-
-import "strings"
+import (
+	"reflect"
+	"sort"
+	"strings"
+	"testing"
+)
 
 func TestCountRepeatLines(t *testing.T) {
 	b := strings.NewReader(`Hello
@@ -12,6 +15,20 @@ Goodbye`)
 	r := countRepeatLines(b)
 	if r["Hello"] != 3 {
 		t.Errorf("Expected 3, but got %v", r["Hello"])
+	}
+}
+
+func TestUpdatingReport(t *testing.T) {
+	count := 2
+	filename := "file1"
+	r1 := lineReport{"line", 3, []string{"file2"}}
+	r2 := updateReport(r1, count, filename)
+	if r2.count != 5 {
+		t.Errorf("Expected 5, got %v", r2.count)
+	}
+	eFiles := []string{"file2", "file1"}
+	if !reflect.DeepEqual(r2.files, eFiles) {
+		t.Errorf("Expected %v, got %v", eFiles, r2.files)
 	}
 }
 
@@ -36,8 +53,20 @@ func TestGetValuesFromReportMap(t *testing.T) {
 	rm["lineOne"] = lineReport{"lineOne", 1, []string{"fileOne"}}
 	rm["lineTwo"] = lineReport{"lineTwo", 2, []string{"fileTwo"}}
 
-	ra := getReportValues(rm)
-	if ra[0].line != "lineOne" {
-		t.Errorf("Expected \"lineOne\", got %v", ra[0].line)
+	rs := getReportValues(rm)
+	if rs[0].line != "lineOne" {
+		t.Errorf("Expected \"lineOne\", got %s", rs[0].line)
+	}
+}
+
+func TestSortingReportSlice(t *testing.T) {
+	rs := lineReports(make([]lineReport, 3))
+	rs[0] = lineReport{"AlineOne", 2, []string{"fileOne"}}
+	rs[1] = lineReport{"BlineOne", 2, []string{"fileOne"}}
+	rs[2] = lineReport{"lineOne", 5, []string{"fileTwo"}}
+
+	sort.Sort(rs)
+	if rs[0].line != "lineOne" {
+		t.Errorf("Expected \"lineOne\", got %s", rs[0].line)
 	}
 }
