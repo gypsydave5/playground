@@ -3,7 +3,7 @@ package main
 import "io"
 import "bufio"
 
-type report struct {
+type lineReport struct {
 	count int
 	files []string
 }
@@ -17,8 +17,8 @@ func countRepeatLines(b io.Reader) map[string]int {
 	return r
 }
 
-func collateLines(c map[string]map[string]int) map[string]report {
-	reports := make(map[string]report)
+func collateLines(c map[string]map[string]int) map[string]lineReport {
+	reports := make(map[string]lineReport)
 	for filename, repeats := range c {
 		for line, count := range repeats {
 			r, reportExists := reports[line]
@@ -27,7 +27,7 @@ func collateLines(c map[string]map[string]int) map[string]report {
 				r.files = append(r.files, filename)
 				reports[line] = r
 			} else {
-				reports[line] = report{count, []string{filename}}
+				reports[line] = lineReport{count, []string{filename}}
 			}
 		}
 	}
