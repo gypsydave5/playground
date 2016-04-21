@@ -26,7 +26,18 @@ func TestCollateLines(t *testing.T) {
 	s["fileTwo"]["Ciao"] = 1
 
 	r := collateLines(s)
-	if r["Hello"].count != 4 {
-		t.Errorf("Expected 4, got %v", r["Hello"].count)
+	if r[0].line != "Hello" {
+		t.Errorf("Expected \"Hello\", got %v", r[0].line)
+	}
+}
+
+func TestGetValuesFromReportMap(t *testing.T) {
+	rm := make(map[string]lineReport)
+	rm["lineOne"] = lineReport{"lineOne", 1, []string{"fileOne"}}
+	rm["lineTwo"] = lineReport{"lineTwo", 2, []string{"fileTwo"}}
+
+	ra := getReportValues(rm)
+	if ra[0].line != "lineOne" {
+		t.Errorf("Expected \"lineOne\", got %v", ra[0].line)
 	}
 }
