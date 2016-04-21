@@ -51,16 +51,18 @@ func TestCollateLines(t *testing.T) {
 func TestGetValuesFromReportMap(t *testing.T) {
 	rm := make(map[string]lineReport)
 	rm["lineOne"] = lineReport{"lineOne", 1, []string{"fileOne"}}
-	rm["lineTwo"] = lineReport{"lineTwo", 2, []string{"fileTwo"}}
 
 	rs := getReportValues(rm)
 	if rs[0].line != "lineOne" {
 		t.Errorf("Expected \"lineOne\", got %s", rs[0].line)
 	}
+	if rs[0].count != 1 {
+		t.Errorf("Expected 1, got %v", rs[0].count)
+	}
 }
 
 func TestSortingReportSlice(t *testing.T) {
-	rs := lineReports(make([]lineReport, 3))
+	rs := make(lineReports, 3)
 	rs[0] = lineReport{"AlineOne", 2, []string{"fileOne"}}
 	rs[1] = lineReport{"BlineOne", 2, []string{"fileOne"}}
 	rs[2] = lineReport{"lineOne", 5, []string{"fileTwo"}}
