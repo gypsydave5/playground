@@ -2,8 +2,10 @@ package main
 
 import (
 	"bufio"
+	"fmt"
 	"io"
 	"sort"
+	"strings"
 )
 
 type lineReport struct {
@@ -17,6 +19,7 @@ type lineReports []lineReport
 func (rs lineReports) Len() int {
 	return len(rs)
 }
+
 func (rs lineReports) Less(i, j int) bool {
 	if rs[i].count > rs[j].count {
 		return true
@@ -41,15 +44,16 @@ func countRepeatLines(b io.Reader) map[string]int {
 }
 
 func getReportValues(rm map[string]lineReport) lineReports {
-	var ra []lineReport
+	var rs []lineReport
 	for _, r := range rm {
-		ra = append(ra, r)
+		rs = append(rs, r)
 	}
-	return ra
+	return rs
 }
 
 func updateReport(r lineReport, c int, f string) lineReport {
 	var newReport lineReport
+	newReport.line = r.line
 	newReport.count = c + r.count
 	newReport.files = append(r.files, f)
 	return newReport
@@ -61,7 +65,7 @@ func collateLines(c map[string]map[string]int) lineReports {
 		for line, count := range repeats {
 			r, reportExists := reportMap[line]
 			if reportExists {
-				updateReport(r, count, filename)
+				reportMap[line] = updateReport(r, count, filename)
 			} else {
 				reportMap[line] = lineReport{line, count, []string{filename}}
 			}
@@ -70,4 +74,26 @@ func collateLines(c map[string]map[string]int) lineReports {
 	reports := getReportValues(reportMap)
 	sort.Sort(reports)
 	return reports
+}
+
+func formatReport(lr lineReport) string {
+	files := strings.Join(lr.files, ", ")
+	return fmt.Sprintf("'%v'\t%d\t%v\n", lr.line, lr.count, files)
+}
+
+func processBuffers(bm map[string]*strings.Reader) lineReports {
+	repeatLines := make(map[string]map[string]int)
+	for line, buffer := range bm {
+		repeatLines[line] = countRepeatLines(buffer)
+	}
+	return collateLines(repeatLines)
+}
+
+func mapReport(rs lineReports, f func(lineReport) string) []string {
+	result := make([]string, len(rs))
+	for i, r := range rs {
+		res := f(r)
+		result[i] = res
+	}
+	return result
 }
