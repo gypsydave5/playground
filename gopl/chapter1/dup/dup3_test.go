@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"reflect"
 	"sort"
 	"strings"
@@ -49,7 +50,7 @@ Goodbye`)
 }
 
 func TestBufferMapToReports(t *testing.T) {
-	bm := make(map[string]*strings.Reader)
+	bm := make(map[string]io.Reader)
 	bm["fileOne"] = strings.NewReader("Hello\nHello\nHello\nGoodbye")
 	bm["fileTwo"] = strings.NewReader("Hello\nGoodbye\nCiao")
 

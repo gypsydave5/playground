@@ -4,9 +4,31 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"os"
 	"sort"
 	"strings"
 )
+
+func main() {
+	buffers := make(map[string]io.Reader)
+	fileNames := os.Args[1:]
+	if len(fileNames) == 0 {
+		buffers["stdin"] = os.Stdin
+	} else {
+		for _, fileName := range fileNames {
+			f, err := os.Open(fileName)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "dup: %v\n", err)
+				continue
+			}
+			buffers[fileName] = f
+			defer f.Close()
+		}
+	}
+	reports := processBuffers(buffers)
+	output := mapReport(reports, formatReport)
+	fmt.Printf("%v", strings.Join(output, "\n"))
+}
 
 type lineReport struct {
 	line  string
@@ -81,7 +103,7 @@ func formatReport(lr lineReport) string {
 	return fmt.Sprintf("'%v'\t%d\t%v\n", lr.line, lr.count, files)
 }
 
-func processBuffers(bm map[string]*strings.Reader) lineReports {
+func processBuffers(bm map[string]io.Reader) lineReports {
 	repeatLines := make(map[string]map[string]int)
 	for line, buffer := range bm {
 		repeatLines[line] = countRepeatLines(buffer)
