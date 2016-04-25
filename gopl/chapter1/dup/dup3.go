@@ -25,35 +25,11 @@ func main() {
 			defer f.Close()
 		}
 	}
+
 	reports := processBuffers(buffers)
-	output := mapReport(reports, formatReport)
+	fReports := filterReports(reports, func(r lineReport) bool { return r.count > 1 })
+	output := formatReports(fReports, formatter)
 	fmt.Printf("%v", strings.Join(output, "\n"))
-}
-
-type lineReport struct {
-	line  string
-	count int
-	files []string
-}
-
-type lineReports []lineReport
-
-func (rs lineReports) Len() int {
-	return len(rs)
-}
-
-func (rs lineReports) Less(i, j int) bool {
-	if rs[i].count > rs[j].count {
-		return true
-	} else if rs[i].count < rs[j].count {
-		return false
-	} else {
-		return rs[i].line > rs[j].line
-	}
-}
-
-func (rs lineReports) Swap(i, j int) {
-	rs[i], rs[j] = rs[j], rs[i]
 }
 
 func countRepeatLines(b io.Reader) map[string]int {
@@ -98,7 +74,7 @@ func collateLines(c map[string]map[string]int) lineReports {
 	return reports
 }
 
-func formatReport(lr lineReport) string {
+func formatter(lr lineReport) string {
 	files := strings.Join(lr.files, ", ")
 	return fmt.Sprintf("'%v'\t%d\t%v\n", lr.line, lr.count, files)
 }
@@ -111,11 +87,21 @@ func processBuffers(bm map[string]io.Reader) lineReports {
 	return collateLines(repeatLines)
 }
 
-func mapReport(rs lineReports, f func(lineReport) string) []string {
+func formatReports(rs lineReports, f func(lineReport) string) []string {
 	result := make([]string, len(rs))
 	for i, r := range rs {
 		res := f(r)
 		result[i] = res
+	}
+	return result
+}
+
+func filterReports(rs lineReports, f func(lineReport) bool) lineReports {
+	result := make(lineReports, 0)
+	for _, r := range rs {
+		if f(r) {
+			result = append(result, r)
+		}
 	}
 	return result
 }

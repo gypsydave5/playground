@@ -9,6 +9,20 @@ import (
 	"testing"
 )
 
+func TestFilterReports(t *testing.T) {
+	countGreaterThan65 := func(r lineReport) bool {
+		return r.count > 65
+	}
+	rs := make(lineReports, 2)
+	rs[0] = lineReport{"line1", 3, []string{"file1", "file2"}}
+	rs[1] = lineReport{"line2", 66, []string{"file1"}}
+
+	fReports := filterReports(rs, countGreaterThan65)
+	if fReports[0].count != 66 {
+		t.Errorf("Expected 66, yet received: %v", fReports[0].count)
+	}
+}
+
 func TestMapReportsToString(t *testing.T) {
 	dumbReporter := func(r lineReport) string {
 		return fmt.Sprintf("%v", r.count)
@@ -18,7 +32,7 @@ func TestMapReportsToString(t *testing.T) {
 	rs[0] = lineReport{"line1", 3, []string{"file1", "file2"}}
 	rs[1] = lineReport{"line2", 66, []string{"file1"}}
 
-	lotsOfReports := mapReport(rs, dumbReporter)
+	lotsOfReports := formatReports(rs, dumbReporter)
 
 	if lotsOfReports[0] != "3" {
 		t.Errorf("Expected \"3\", yet received: %v", lotsOfReports[0])
@@ -31,7 +45,7 @@ func TestMapReportsToString(t *testing.T) {
 
 func TestFormatReport(t *testing.T) {
 	lr := lineReport{"line1", 3, []string{"file1", "file2"}}
-	rs := formatReport(lr)
+	rs := formatter(lr)
 
 	if rs != "'line1'\t3\tfile1, file2\n" {
 		t.Errorf("Unexpected report format: %s", rs)
