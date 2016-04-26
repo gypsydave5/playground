@@ -52,6 +52,16 @@ func TestFormatReport(t *testing.T) {
 	}
 }
 
+func TestMakeFormatterWithLinePadding(t *testing.T) {
+	f := makeFormatterWithLinePad(10)
+	lr := lineReport{"line1", 3, []string{"file1", "file2"}}
+	rs := f(lr)
+
+	if rs != "line1     \t3\tfile1, file2\n" {
+		t.Errorf("Unexpected report format: %s", rs)
+	}
+}
+
 func TestCountRepeatLines(t *testing.T) {
 	b := strings.NewReader(`Hello
 Hello
@@ -144,5 +154,39 @@ func TestSortingReportSlice(t *testing.T) {
 	sort.Sort(rs)
 	if rs[0].line != "lineOne" {
 		t.Errorf("Expected \"lineOne\", got %s", rs[0].line)
+	}
+}
+
+func TestNormalizeReportLines(t *testing.T) {
+	lr := lineReport{"\t\t22", 2, []string{"fileOne"}}
+	nlr := normalizeReportLines(lr)
+
+	if nlr.line != "        22" {
+		t.Errorf("Expected line to be normalized")
+	}
+}
+
+func TestMapReports(t *testing.T) {
+	rs := make(lineReports, 3)
+	rs[0] = lineReport{"1", 2, []string{"fileOne"}}
+	rs[1] = lineReport{"\t22", 2, []string{"fileOne"}}
+
+	nrs := mapReports(rs, normalizeReportLines)
+
+	if nrs[1].line != "    22" {
+		t.Errorf("Expected to map function to lineReports")
+	}
+}
+
+func TestMaxLineLength(t *testing.T) {
+	rs := make(lineReports, 3)
+	rs[0] = lineReport{"1", 2, []string{"fileOne"}}
+	rs[1] = lineReport{"22", 2, []string{"fileOne"}}
+	rs[2] = lineReport{"999999999", 5, []string{"fileTwo"}}
+
+	maxLen := maxLineLength(rs)
+
+	if maxLen != 9 {
+		t.Errorf("Expected 13, but got %v", maxLen)
 	}
 }

@@ -18,7 +18,7 @@ func main() {
 		for _, fileName := range fileNames {
 			f, err := os.Open(fileName)
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "dup: %v\n", err)
+				fmt.Fprintf(os.Stderr, "dup: %v", err)
 				continue
 			}
 			buffers[fileName] = f
@@ -28,8 +28,9 @@ func main() {
 
 	reports := processBuffers(buffers)
 	fReports := filterReports(reports, func(r lineReport) bool { return r.count > 1 })
-	output := formatReports(fReports, formatter)
-	fmt.Printf("%v", strings.Join(output, "\n"))
+	nReports := mapReports(fReports, normalizeReportLines)
+	output := formatReports(nReports, makeFormatterWithLinePad(maxLineLength(fReports)))
+	fmt.Printf("%v", strings.Join(output, ""))
 }
 
 func countRepeatLines(b io.Reader) map[string]int {
@@ -102,6 +103,37 @@ func filterReports(rs lineReports, f func(lineReport) bool) lineReports {
 		if f(r) {
 			result = append(result, r)
 		}
+	}
+	return result
+}
+
+func maxLineLength(rs lineReports) (max int) {
+	for _, r := range rs {
+		rLen := len([]rune(r.line))
+		if rLen > max {
+			max = rLen
+		}
+	}
+	return
+}
+
+func makeFormatterWithLinePad(padTo int) func(lineReport) string {
+	return func(lr lineReport) string {
+		files := strings.Join(lr.files, ", ")
+		return fmt.Sprintf("%-*s\t%d\t%v\n", padTo, lr.line, lr.count, files)
+	}
+}
+
+func normalizeReportLines(lr lineReport) lineReport {
+	normLine := strings.Replace(lr.line, "\t", "    ", -1)
+	return lineReport{normLine, lr.count, lr.files}
+}
+
+func mapReports(lrs lineReports, f func(lineReport) lineReport) lineReports {
+	result := make(lineReports, len(lrs))
+	for i, r := range lrs {
+		res := f(r)
+		result[i] = res
 	}
 	return result
 }
