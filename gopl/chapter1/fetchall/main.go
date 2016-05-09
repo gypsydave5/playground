@@ -21,7 +21,7 @@ func main() {
 	}
 
 	for _, url := range os.Args[1:] {
-		go fetch(url, ch)
+		go fetchConcurrent(url, ch)
 	}
 
 	for range os.Args[1:] {
@@ -31,7 +31,7 @@ func main() {
 	fmt.Fprintf(f, "%.2fs elapsed\n", time.Since(start).Seconds())
 }
 
-func fetch(url string, ch chan<- string) {
+func fetchConcurrent(url string, ch chan<- string) {
 	start := time.Now()
 
 	resp, err := http.Get(url)
