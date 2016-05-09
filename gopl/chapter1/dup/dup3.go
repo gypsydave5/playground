@@ -75,11 +75,6 @@ func collateLines(c map[string]map[string]int) lineReports {
 	return reports
 }
 
-func formatter(lr lineReport) string {
-	files := strings.Join(lr.files, ", ")
-	return fmt.Sprintf("'%v'\t%d\t%v\n", lr.line, lr.count, files)
-}
-
 func processBuffers(bm map[string]io.Reader) lineReports {
 	repeatLines := make(map[string]map[string]int)
 	for line, buffer := range bm {

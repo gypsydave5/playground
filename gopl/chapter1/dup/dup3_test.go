@@ -44,6 +44,10 @@ func TestMapReportsToString(t *testing.T) {
 }
 
 func TestFormatReport(t *testing.T) {
+	formatter := func(lr lineReport) string {
+		files := strings.Join(lr.files, ", ")
+		return fmt.Sprintf("'%v'\t%d\t%v\n", lr.line, lr.count, files)
+	}
 	lr := lineReport{"line1", 3, []string{"file1", "file2"}}
 	rs := formatter(lr)
 

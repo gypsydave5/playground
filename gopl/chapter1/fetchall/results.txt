@@ -1,1 +1,0 @@
-Get google.com: unsupported protocol scheme ""Get amazon.com: unsupported protocol scheme ""0.00s elapsed
