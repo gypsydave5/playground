@@ -21,7 +21,7 @@ func TestFetchConcurrent(t *testing.T) {
 			fmt.Fprintln(w, "hi")
 			time.Sleep(200 * time.Millisecond)
 		}))
-	ch := make(chan string, 2)
+	ch := make(chan fetchReport, 2)
 
 	go fetchConcurrent(ts1.URL, ch)
 	go fetchConcurrent(ts2.URL, ch)
@@ -34,11 +34,11 @@ func TestFetchConcurrent(t *testing.T) {
 	out := <-ch
 	out2 := <-ch
 
-	if !reportRegexOne.MatchString(out) {
-		t.Errorf("invalid report string, %v", out)
+	if !reportRegexOne.MatchString(out.String()) {
+		t.Errorf("invalid report string, %v", out.String())
 	}
 
-	if !reportRegexTwo.MatchString(out2) {
-		t.Errorf("invalid report string, %v", out2)
+	if !reportRegexTwo.MatchString(out2.String()) {
+		t.Errorf("invalid report string, %v", out2.String())
 	}
 }
