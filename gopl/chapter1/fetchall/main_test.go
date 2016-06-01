@@ -21,13 +21,14 @@ func TestFetchConcurrent(t *testing.T) {
 			fmt.Fprintln(w, "hi")
 			time.Sleep(200 * time.Millisecond)
 		}))
-	ch := make(chan fetchReport, 2)
+	ch := make(chan fetchReport)
 
 	go fetchConcurrent(ts1.URL, ch)
 	go fetchConcurrent(ts2.URL, ch)
 
 	validReportRegexOne := fmt.Sprintf("^0\\.1[0-9]{1}s\\s+%d\\s%s", 7, regexp.QuoteMeta(ts1.URL))
 	validReportRegexTwo := fmt.Sprintf("^0\\.2[0-9]{1}s\\s+%d\\s%s", 3, regexp.QuoteMeta(ts2.URL))
+
 	reportRegexOne, _ := regexp.Compile(validReportRegexOne)
 	reportRegexTwo, _ := regexp.Compile(validReportRegexTwo)
 
