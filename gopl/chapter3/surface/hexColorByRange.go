@@ -5,7 +5,15 @@ import (
 	"math"
 )
 
-func hexColorByRange(maxZ, minZ, z float64) string {
+type hexColorByRange func(maxZ, minZ, z float64) string
+
+func newTestColorByRange(maxColor, minColor string) hexColorByRange {
+	return func(maxZ, minZ, z float64) string {
+		return "#FF0000"
+	}
+}
+
+func rgbHexColorByRange(maxZ, minZ, z float64) string {
 	midPt := (maxZ + minZ) / 2
 
 	r := math.Floor(255 * ((z - midPt) / (maxZ - midPt)))

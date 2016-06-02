@@ -90,7 +90,7 @@ func generateSVG(s surface, width int, height int) *bytes.Buffer {
 }
 
 func polygonToSVG(p polygon, maxHeight float64, minHeight float64) string {
-	color := hexColorByRange(maxHeight, minHeight, p.z)
+	color := rgbHexColorByRange(maxHeight, minHeight, p.z)
 	return fmt.Sprintf("<polygon points='%g,%g %g,%g %g,%g %g,%g' fill='%v'/>\n",
 		p.ax, p.ay, p.bx, p.by, p.cx, p.cy, p.dx, p.dy, color)
 }
