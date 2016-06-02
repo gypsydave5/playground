@@ -2,13 +2,20 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"math"
+	"os"
 )
 
 type corner func(int, int) (float64, float64, float64, error)
 type graphFun func(float64, float64) float64
 type newPolygon func(int, int) polygon
+type surface struct {
+	polygons  [][]polygon
+	maxHeight float64
+	minHeight float64
+}
 type polygon struct {
 	ax  float64
 	ay  float64
@@ -36,23 +43,55 @@ var sin30, cos30 = math.Sin(angle), math.Cos(angle) // sin(30°), cos(30°)
 func main() {
 	corner := fMapper(f)
 	newPolygon := newPolygonGen(corner)
-	fmt.Printf("<svg xmlns='http://www.w3.org/2000/svg' "+
-		"style='stroke: grey; fill: white; stroke-width: 0.7' "+
-		"width='%d' height='%d'>", width, height)
+	surface := newSurface(newPolygon, cells)
+	os.Stderr.WriteString(fmt.Sprintf("max: %v, min: %v\n\n", surface.maxHeight, surface.minHeight))
+	generateSVG(surface, width, height).WriteTo(os.Stdout)
+}
+
+func newSurface(pFunc newPolygon, cells int) surface {
+	s := surface{}
+	s.minHeight = math.MaxFloat64
+	s.maxHeight = -math.MaxFloat64
+	s.polygons = make([][]polygon, cells)
 	for i := 0; i < cells; i++ {
+		s.polygons[i] = make([]polygon, cells)
+
 		for j := 0; j < cells; j++ {
-			p := newPolygon(i, j)
-			if p.err != nil {
-				continue
+			p := pFunc(i, j)
+			s.polygons[i][j] = p
+
+			if p.z > s.maxHeight {
+				s.maxHeight = p.z
 			}
-
-			color := hexColorByRange(1, -1, p.z)
-
-			fmt.Printf("<polygon points='%g,%g %g,%g %g,%g %g,%g' fill='%v'/>\n",
-				p.ax, p.ay, p.bx, p.by, p.cx, p.cy, p.dx, p.dy, color)
+			if p.z < s.minHeight {
+				s.minHeight = p.z
+			}
 		}
 	}
-	fmt.Println("</svg>")
+	return s
+}
+
+func generateSVG(s surface, width int, height int) *bytes.Buffer {
+	var b bytes.Buffer
+	cells := len(s.polygons)
+	b.WriteString(fmt.Sprintf("<svg xmlns='http://www.w3.org/2000/svg' "+
+		"style='stroke: grey; fill: white; stroke-width: 0.7' "+
+		"width='%d' height='%d'>", width, height))
+
+	for i := 0; i < cells; i++ {
+		for j := 0; j < cells; j++ {
+			b.WriteString(polygonToSVG(s.polygons[i][j], s.maxHeight, s.minHeight))
+		}
+	}
+
+	b.WriteString("</svg>")
+	return &b
+}
+
+func polygonToSVG(p polygon, maxHeight float64, minHeight float64) string {
+	color := hexColorByRange(maxHeight, minHeight, p.z)
+	return fmt.Sprintf("<polygon points='%g,%g %g,%g %g,%g %g,%g' fill='%v'/>\n",
+		p.ax, p.ay, p.bx, p.by, p.cx, p.cy, p.dx, p.dy, color)
 }
 
 func newPolygonGen(c corner) newPolygon {
@@ -71,18 +110,27 @@ func newPolygonGen(c corner) newPolygon {
 			return p
 		}
 		p.bx, p.by = project(x, y, z)
+		if p.z < z {
+			p.z = z
+		}
 		x, y, z, err = c(i, j+1)
 		if err != nil {
 			p.err = err
 			return p
 		}
 		p.cx, p.cy = project(x, y, z)
+		if p.z < z {
+			p.z = z
+		}
 		x, y, z, err = c(i+1, j+1)
 		if err != nil {
 			p.err = err
 			return p
 		}
 		p.dx, p.dy = project(x, y, z)
+		if p.z < z {
+			p.z = z
+		}
 		return p
 	}
 }

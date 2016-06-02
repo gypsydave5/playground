@@ -24,6 +24,17 @@ func TestZColorHexRed(t *testing.T) {
 	}
 }
 
+func TestZColorHexRedAgain(t *testing.T) {
+	maxZ := 0.9850673555377986
+	minZ := -0.21285613860128652
+	z := 0.9850673555377986
+	c := hexColorByRange(maxZ, minZ, z)
+	expectedC := "#FF0000"
+	if c != expectedC {
+		t.Errorf("Expected %v, got %v", expectedC, c)
+	}
+}
+
 func TestZColorHexBlue(t *testing.T) {
 	maxZ := 1.0
 	minZ := -1.0
