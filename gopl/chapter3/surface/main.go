@@ -4,6 +4,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"math"
 	"os"
 )
@@ -45,7 +46,7 @@ func main() {
 	newPolygon := newPolygonGen(corner)
 	surface := newSurface(newPolygon, cells)
 	os.Stderr.WriteString(fmt.Sprintf("max: %v, min: %v\n\n", surface.maxHeight, surface.minHeight))
-	generateSVG(surface, width, height).WriteTo(os.Stdout)
+	io.Copy(os.Stdout, generateSVG(surface, width, height))
 }
 
 func newSurface(pFunc newPolygon, cells int) surface {
