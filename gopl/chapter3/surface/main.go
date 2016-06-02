@@ -37,6 +37,8 @@ const (
 	xyscale       = width / 2 / xyrange // pixels per x or y unit
 	zscale        = height * 0.4        // pixels per z unit
 	angle         = math.Pi / 6         // angle of x, y axes (=30°)
+	upperColor    = "FF0000"            // color of surface peaks (rgb hex)
+	lowerColor    = "0000FF"            // color of surface troughs (rgb hex)
 )
 
 var sin30, cos30 = math.Sin(angle), math.Cos(angle) // sin(30°), cos(30°)
@@ -45,8 +47,12 @@ func main() {
 	corner := fMapper(f)
 	newPolygon := newPolygonGen(corner)
 	surface := newSurface(newPolygon, cells)
-	os.Stderr.WriteString(fmt.Sprintf("max: %v, min: %v\n\n", surface.maxHeight, surface.minHeight))
-	io.Copy(os.Stdout, generateSVG(surface, width, height))
+	hexColorFunction, err := newTestColorByRange(upperColor, lowerColor)
+	if err != nil {
+		os.Stdout.WriteString(err.Error())
+		os.Exit(1)
+	}
+	io.Copy(os.Stdout, generateSVG(surface, width, height, hexColorFunction))
 }
 
 func newSurface(pFunc newPolygon, cells int) surface {
@@ -72,7 +78,7 @@ func newSurface(pFunc newPolygon, cells int) surface {
 	return s
 }
 
-func generateSVG(s surface, width int, height int) *bytes.Buffer {
+func generateSVG(s surface, width int, height int, hcFn hexColorByRange) *bytes.Buffer {
 	var b bytes.Buffer
 	cells := len(s.polygons)
 	b.WriteString(fmt.Sprintf("<svg xmlns='http://www.w3.org/2000/svg' "+
@@ -81,7 +87,7 @@ func generateSVG(s surface, width int, height int) *bytes.Buffer {
 
 	for i := 0; i < cells; i++ {
 		for j := 0; j < cells; j++ {
-			b.WriteString(polygonToSVG(s.polygons[i][j], s.maxHeight, s.minHeight))
+			b.WriteString(polygonToSVG(s.polygons[i][j], s.maxHeight, s.minHeight, hcFn))
 		}
 	}
 
@@ -89,8 +95,8 @@ func generateSVG(s surface, width int, height int) *bytes.Buffer {
 	return &b
 }
 
-func polygonToSVG(p polygon, maxHeight float64, minHeight float64) string {
-	color := rgbHexColorByRange(maxHeight, minHeight, p.z)
+func polygonToSVG(p polygon, maxHeight float64, minHeight float64, hcFn hexColorByRange) string {
+	color := hcFn(maxHeight, minHeight, p.z)
 	return fmt.Sprintf("<polygon points='%g,%g %g,%g %g,%g %g,%g' fill='#%v'/>\n",
 		p.ax, p.ay, p.bx, p.by, p.cx, p.cy, p.dx, p.dy, color)
 }

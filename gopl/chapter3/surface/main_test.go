@@ -82,7 +82,7 @@ func TestGenerateSVG(t *testing.T) {
 		maxHeight: 1,
 		minHeight: -1,
 	}
-	svg := generateSVG(s, 100, 200).String()
+	svg := generateSVG(s, 100, 200, rgbHexColorByRange).String()
 	expectedSVGString := "<svg xmlns='http://www.w3.org/2000/svg' " +
 		"style='stroke: grey; fill: white; stroke-width: 0.7' " +
 		"width='100' height='200'>" +
