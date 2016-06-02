@@ -5,21 +5,21 @@ import (
 )
 import "math"
 
-func TestFMapperThrowsOnInfinity(t *testing.T) {
+func TestSurfaceFunctionMapperThrowsOnInfinity(t *testing.T) {
 	_, _, _, err := surfaceFunctionMapper(infinitude)(1, 1)
 	if err == nil {
 		t.Errorf("Expected an error to be emitted")
 	}
 }
 
-func TestFMapperThrowsOnNegInfinity(t *testing.T) {
+func TestSurfaceFunctionMapperThrowsOnNegInfinity(t *testing.T) {
 	_, _, _, err := surfaceFunctionMapper(negInfinitude)(1, 1)
 	if err == nil {
 		t.Errorf("Expected an error to be emitted")
 	}
 }
 
-func TestFMapperOKWithFinitude(t *testing.T) {
+func TestSurfaceFunctionMapperOKWithFinitude(t *testing.T) {
 	_, _, _, err := surfaceFunctionMapper(alwaysZero)(1, 1)
 	if err != nil {
 		t.Errorf("Shouldn't error on the finite")

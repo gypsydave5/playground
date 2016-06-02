@@ -79,6 +79,22 @@ func TestColorFromHexString(t *testing.T) {
 	}
 }
 
+func TestColorFromHexStringErrorsOnTooShort(t *testing.T) {
+	s := "FF0F"
+	_, err := colorFromHexString(s)
+	if err == nil {
+		t.Error("Expected an error, yet there was none")
+	}
+}
+
+func TestColorFromHexStringErrorsOnInvalidHexes(t *testing.T) {
+	s := "FFFFGG"
+	_, err := colorFromHexString(s)
+	if err == nil {
+		t.Error("Expected an error, yet there was none")
+	}
+}
+
 func TestColorHexToString(t *testing.T) {
 	c := colorHex{
 		r: '\xFF',
