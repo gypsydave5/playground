@@ -6,28 +6,28 @@ import (
 import "math"
 
 func TestFMapperThrowsOnInfinity(t *testing.T) {
-	_, _, _, err := fMapper(infinitude)(1, 1)
+	_, _, _, err := surfaceFunctionMapper(infinitude)(1, 1)
 	if err == nil {
 		t.Errorf("Expected an error to be emitted")
 	}
 }
 
 func TestFMapperThrowsOnNegInfinity(t *testing.T) {
-	_, _, _, err := fMapper(negInfinitude)(1, 1)
+	_, _, _, err := surfaceFunctionMapper(negInfinitude)(1, 1)
 	if err == nil {
 		t.Errorf("Expected an error to be emitted")
 	}
 }
 
 func TestFMapperOKWithFinitude(t *testing.T) {
-	_, _, _, err := fMapper(alwaysZero)(1, 1)
+	_, _, _, err := surfaceFunctionMapper(alwaysZero)(1, 1)
 	if err != nil {
 		t.Errorf("Shouldn't error on the finite")
 	}
 }
 
 func TestNewPolygon(t *testing.T) {
-	c := fMapper(alwaysZero)
+	c := surfaceFunctionMapper(alwaysZero)
 	p := newPolygonGen(c)(0, 0)
 	expectedP := polygon{
 		ax: 302.5980762113533,
@@ -45,7 +45,7 @@ func TestNewPolygon(t *testing.T) {
 }
 
 func TestGenerateSurface(t *testing.T) {
-	c := fMapper(alwaysZero)
+	c := surfaceFunctionMapper(alwaysZero)
 	p := newPolygonGen(c)
 	surface := newSurface(p, 2)
 

@@ -37,14 +37,14 @@ const (
 	xyscale       = width / 2 / xyrange // pixels per x or y unit
 	zscale        = height * 0.4        // pixels per z unit
 	angle         = math.Pi / 6         // angle of x, y axes (=30°)
-	upperColor    = "FF0000"            // color of surface peaks (rgb hex)
+	upperColor    = "00FF00"            // color of surface peaks (rgb hex)
 	lowerColor    = "0000FF"            // color of surface troughs (rgb hex)
 )
 
 var sin30, cos30 = math.Sin(angle), math.Cos(angle) // sin(30°), cos(30°)
 
 func main() {
-	corner := fMapper(f)
+	corner := surfaceFunctionMapper(f)
 	newPolygon := newPolygonGen(corner)
 	surface := newSurface(newPolygon, cells)
 	hexColorFunction, err := newTestColorByRange(upperColor, lowerColor)
@@ -133,7 +133,7 @@ func newPolygonGen(c corner) newPolygon {
 	}
 }
 
-func fMapper(f graphFun) corner {
+func surfaceFunctionMapper(f graphFun) corner {
 	return func(i, j int) (float64, float64, float64, error) {
 		var err error
 		// Find point (x,y) at corner of cell (i,j).
@@ -160,8 +160,8 @@ func project(x, y, z float64) (sx, sy float64) {
 }
 
 func f(x, y float64) float64 {
-	return (math.Sin(x) * math.Cos(y)) / 4
-	//return math.Cos(math.Abs(x)+math.Abs(y)) / 8
+	//return (math.Sin(x) * math.Cos(y)) / 4
+	return math.Cos(math.Abs(x)+math.Abs(y)) / 8
 	//r := math.Hypot(x, y) // distance from (0,0)
 	//return math.Sin(r) / r
 }
