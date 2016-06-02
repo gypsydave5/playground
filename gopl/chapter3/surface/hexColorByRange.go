@@ -30,7 +30,6 @@ func newTestColorByRange(maxColorHex, minColorHex colorHex) hexColorByRange {
 		ch.b = calculateMidByte(maxZ, minZ, maxColorHex.b, minColorHex.b, z)
 		return ch.String()
 	}
-
 	return hcFn
 }
 

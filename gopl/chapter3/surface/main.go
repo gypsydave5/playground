@@ -11,7 +11,7 @@ import (
 
 type corner func(int, int) (float64, float64, float64, error)
 type graphFun func(float64, float64) float64
-type newPolygon func(int, int) polygon
+type polygonFactory func(int, int) polygon
 type surface struct {
 	polygons  [][]polygon
 	maxHeight float64
@@ -45,8 +45,8 @@ var sin30, cos30 = math.Sin(angle), math.Cos(angle) // sin(30°), cos(30°)
 
 func main() {
 	corner := surfaceFunctionMapper(f)
-	newPolygon := newPolygonGen(corner)
-	surface := newSurface(newPolygon, cells)
+	polygonFactory := polygonFactoryGenerator(corner)
+	surface := newSurface(polygonFactory, cells)
 	maxColorHex, err := colorFromHexString(upperColor)
 	if err != nil {
 		os.Stdout.WriteString(err.Error())
@@ -61,7 +61,7 @@ func main() {
 	io.Copy(os.Stdout, generateSVG(surface, width, height, hexColorFunction))
 }
 
-func newSurface(pFunc newPolygon, cells int) surface {
+func newSurface(pFac polygonFactory, cells int) surface {
 	var s surface
 	s.minHeight = math.MaxFloat64
 	s.maxHeight = -math.MaxFloat64
@@ -70,7 +70,7 @@ func newSurface(pFunc newPolygon, cells int) surface {
 		s.polygons[i] = make([]polygon, cells)
 
 		for j := 0; j < cells; j++ {
-			p := pFunc(i, j)
+			p := pFac(i, j)
 			s.polygons[i][j] = p
 
 			if p.z > s.maxHeight {
@@ -107,7 +107,7 @@ func polygonToSVG(p polygon, maxHeight float64, minHeight float64, hcFn hexColor
 		p.ax, p.ay, p.bx, p.by, p.cx, p.cy, p.dx, p.dy, color)
 }
 
-func newPolygonGen(c corner) newPolygon {
+func polygonFactoryGenerator(c corner) polygonFactory {
 	return func(i, j int) polygon {
 		p := polygon{}
 		x, y, z1, err := c(i+1, j)

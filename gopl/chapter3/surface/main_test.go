@@ -28,7 +28,7 @@ func TestSurfaceFunctionMapperOKWithFinitude(t *testing.T) {
 
 func TestNewPolygon(t *testing.T) {
 	c := surfaceFunctionMapper(alwaysZero)
-	p := newPolygonGen(c)(0, 0)
+	p := polygonFactoryGenerator(c)(0, 0)
 	expectedP := polygon{
 		ax: 302.5980762113533,
 		ay: 11.5,
@@ -46,7 +46,7 @@ func TestNewPolygon(t *testing.T) {
 
 func TestGenerateSurface(t *testing.T) {
 	c := surfaceFunctionMapper(alwaysZero)
-	p := newPolygonGen(c)
+	p := polygonFactoryGenerator(c)
 	surface := newSurface(p, 2)
 
 	if len(surface.polygons) != 2 {
