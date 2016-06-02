@@ -22,9 +22,7 @@ func (ch colorHex) String() string {
 	return strings.ToUpper(hex.EncodeToString(b))
 }
 
-func newTestColorByRange(maxColor, minColor string) (hexColorByRange, error) {
-	var maxColorHex, minColorHex colorHex
-
+func newTestColorByRange(maxColorHex, minColorHex colorHex) hexColorByRange {
 	hcFn := func(maxZ, minZ, z float64) string {
 		var ch colorHex
 		ch.r = calculateMidByte(maxZ, minZ, maxColorHex.r, minColorHex.r, z)
@@ -33,16 +31,7 @@ func newTestColorByRange(maxColor, minColor string) (hexColorByRange, error) {
 		return ch.String()
 	}
 
-	maxColorHex, err := colorFromHexString(maxColor)
-	if err != nil {
-		return hcFn, err
-	}
-	minColorHex, err = colorFromHexString(minColor)
-	if err != nil {
-		return hcFn, err
-	}
-
-	return hcFn, nil
+	return hcFn
 }
 
 func calculateMidByte(maxFloat, minFloat float64, maxHex, minHex byte, f float64) byte {

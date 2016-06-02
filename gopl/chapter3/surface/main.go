@@ -47,11 +47,17 @@ func main() {
 	corner := surfaceFunctionMapper(f)
 	newPolygon := newPolygonGen(corner)
 	surface := newSurface(newPolygon, cells)
-	hexColorFunction, err := newTestColorByRange(upperColor, lowerColor)
+	maxColorHex, err := colorFromHexString(upperColor)
 	if err != nil {
 		os.Stdout.WriteString(err.Error())
 		os.Exit(1)
 	}
+	minColorHex, err := colorFromHexString(lowerColor)
+	if err != nil {
+		os.Stdout.WriteString(err.Error())
+		os.Exit(1)
+	}
+	hexColorFunction := newTestColorByRange(maxColorHex, minColorHex)
 	io.Copy(os.Stdout, generateSVG(surface, width, height, hexColorFunction))
 }
 

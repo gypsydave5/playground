@@ -5,10 +5,10 @@ import "testing"
 // Tests around a custom colour function, calculating a colour in a range between
 // two supplied colors.
 func TestNewColorByRangeMax(t *testing.T) {
-	maxColor := "FF0000"
-	minColor := "0000FF"
+	maxColor, _ := colorFromHexString("FF0000")
+	minColor, _ := colorFromHexString("0000FF")
 
-	hexColorByRange, _ := newTestColorByRange(maxColor, minColor)
+	hexColorByRange := newTestColorByRange(maxColor, minColor)
 
 	maxZ := 1.0
 	minZ := -1.0
@@ -21,10 +21,10 @@ func TestNewColorByRangeMax(t *testing.T) {
 }
 
 func TestNewColorByRangeMin(t *testing.T) {
-	maxColor := "FF0000"
-	minColor := "0000FF"
+	maxColor, _ := colorFromHexString("FF0000")
+	minColor, _ := colorFromHexString("0000FF")
 
-	hexColorByRange, _ := newTestColorByRange(maxColor, minColor)
+	hexColorByRange := newTestColorByRange(maxColor, minColor)
 
 	maxZ := 1.0
 	minZ := -1.0
@@ -51,10 +51,10 @@ func TestCalculateMidByte(t *testing.T) {
 }
 
 func TestNewColorByRangeMid(t *testing.T) {
-	maxColor := "FFFFFF"
-	minColor := "000000"
+	maxColor, _ := colorFromHexString("FFFFFF")
+	minColor, _ := colorFromHexString("000000")
 
-	hexColorByRange, _ := newTestColorByRange(maxColor, minColor)
+	hexColorByRange := newTestColorByRange(maxColor, minColor)
 
 	maxZ := 1.0
 	minZ := -1.0
