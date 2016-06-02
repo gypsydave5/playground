@@ -7,16 +7,20 @@ import (
 
 func hexColorByRange(maxZ, minZ, z float64) string {
 	midPt := (maxZ + minZ) / 2
-	r := math.Floor(255 * (z / midPt))
-	g := math.Floor(255 - math.Abs(255*(z/midPt)))
-	b := math.Floor(255 * (z / midPt))
+
+	r := math.Floor(255 * ((z - midPt) / (maxZ - midPt)))
+	g := math.Floor(255 - math.Abs(255*(z/(maxZ-midPt))))
+	b := math.Floor(255 * ((midPt - z) / (midPt - minZ)))
 
 	var bR, bG, bB byte
-	if r > 0 {
+
+	if z > midPt {
 		bR = byte(r)
 	}
-	bG = byte(g)
-	if b < 0 {
+	if g > 0 {
+		bG = byte(g)
+	}
+	if z < midPt {
 		bB = byte(math.Abs(b))
 	}
 

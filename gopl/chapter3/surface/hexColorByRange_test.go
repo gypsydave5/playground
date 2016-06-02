@@ -56,3 +56,14 @@ func TestZColorHexMid(t *testing.T) {
 		t.Errorf("Expected %v, got %v", expectedC, c)
 	}
 }
+
+func TestZColorHexLowerMid(t *testing.T) {
+	maxZ := 1.0
+	minZ := -1.0
+	z := -0.5
+	c := hexColorByRange(maxZ, minZ, z)
+	expectedC := "#007F7F"
+	if c != expectedC {
+		t.Errorf("Expected %v, got %v", expectedC, c)
+	}
+}
