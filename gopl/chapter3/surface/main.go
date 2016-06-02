@@ -98,40 +98,31 @@ func polygonToSVG(p polygon, maxHeight float64, minHeight float64) string {
 func newPolygonGen(c corner) newPolygon {
 	return func(i, j int) polygon {
 		p := polygon{}
-		x, y, z, err := c(i+1, j)
+		x, y, z1, err := c(i+1, j)
 		if err != nil {
 			p.err = err
 			return p
 		}
-		p.ax, p.ay = project(x, y, z)
-		p.z = z
-		x, y, z, err = c(i, j)
+		p.ax, p.ay = project(x, y, z1)
+		x, y, z2, err := c(i, j)
 		if err != nil {
 			p.err = err
 			return p
 		}
-		p.bx, p.by = project(x, y, z)
-		if p.z < z {
-			p.z = z
-		}
-		x, y, z, err = c(i, j+1)
+		p.bx, p.by = project(x, y, z2)
+		x, y, z3, err := c(i, j+1)
 		if err != nil {
 			p.err = err
 			return p
 		}
-		p.cx, p.cy = project(x, y, z)
-		if p.z < z {
-			p.z = z
-		}
-		x, y, z, err = c(i+1, j+1)
+		p.cx, p.cy = project(x, y, z3)
+		x, y, z4, err := c(i+1, j+1)
 		if err != nil {
 			p.err = err
 			return p
 		}
-		p.dx, p.dy = project(x, y, z)
-		if p.z < z {
-			p.z = z
-		}
+		p.dx, p.dy = project(x, y, z4)
+		p.z = (z1 + z2 + z3 + z4) / 4
 		return p
 	}
 }
@@ -163,8 +154,8 @@ func project(x, y, z float64) (sx, sy float64) {
 }
 
 func f(x, y float64) float64 {
-	//return (math.Sin(x) * math.Cos(y)) / 4
+	return (math.Sin(x) * math.Cos(y)) / 4
 	//return math.Cos(math.Abs(x)+math.Abs(y)) / 8
-	r := math.Hypot(x, y) // distance from (0,0)
-	return math.Sin(r) / r
+	//r := math.Hypot(x, y) // distance from (0,0)
+	//return math.Sin(r) / r
 }
