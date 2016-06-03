@@ -1,4 +1,4 @@
-package main
+package surface
 
 import (
 	"testing"
@@ -28,7 +28,8 @@ func TestSurfaceFunctionMapperOKWithFinitude(t *testing.T) {
 
 func TestNewPolygon(t *testing.T) {
 	c := surfaceFunctionMapper(alwaysZero)
-	p := polygonFactoryGenerator(c)(0, 0)
+	pf := newProjection(width, height, xyscale, zscale)
+	p := polygonFactoryGenerator(c, pf)(0, 0)
 	expectedP := polygon{
 		ax: 302.5980762113533,
 		ay: 11.5,
@@ -46,7 +47,8 @@ func TestNewPolygon(t *testing.T) {
 
 func TestGenerateSurface(t *testing.T) {
 	c := surfaceFunctionMapper(alwaysZero)
-	p := polygonFactoryGenerator(c)
+	pf := newProjection(width, height, xyscale, zscale)
+	p := polygonFactoryGenerator(c, pf)
 	surface := newSurface(p, 2)
 
 	if len(surface.polygons) != 2 {
@@ -90,16 +92,6 @@ func TestGenerateSVG(t *testing.T) {
 		"</svg>"
 	if svg != expectedSVGString {
 		t.Errorf("Expected:\n\n%s\n\n, but got\n\n%s\n\n", expectedSVGString, svg)
-	}
-}
-
-func TestProject(t *testing.T) {
-	sx, sy := project(0, 0, 0)
-	if sx != 300 {
-		t.Errorf("Expected sx to be 300, got %v", sx)
-	}
-	if sy != 160 {
-		t.Errorf("Expected sx to be 160, got %v", sy)
 	}
 }
 
