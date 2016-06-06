@@ -2,7 +2,6 @@
 package surface
 
 import (
-	"bytes"
 	"fmt"
 	"io"
 	"math"
@@ -20,8 +19,11 @@ const angle = math.Pi / 6 // angle of x, y axes (=30°)
 
 var sin30, cos30 = math.Sin(angle), math.Cos(angle) // sin(30°), cos(30°)
 
-// SVG makes an SVG
-func SVG(f graphFun, cells, width, height int, xyrange float64, upperColor, lowerColor string) (io.Reader, error) {
+// SVG returns an io.Writer that writes an SVG of the 3D graph described by
+// the function graphFun.
+//   f:
+func SVG(f graphFun, cells, width, height int,
+	xyrange float64, upperColor, lowerColor string, out io.Writer) error {
 	xyscale := float64(width) / 2.0 / xyrange // pixels per x or y unit
 	zscale := float64(height) * 0.4           // pixels per z unit
 
@@ -32,14 +34,14 @@ func SVG(f graphFun, cells, width, height int, xyrange float64, upperColor, lowe
 
 	maxColorHex, err := colorFromHexString(upperColor)
 	if err != nil {
-		return bytes.NewReader([]byte{}), err
+		return err
 	}
 	minColorHex, err := colorFromHexString(lowerColor)
 	if err != nil {
-		return bytes.NewReader([]byte{}), err
+		return err
 	}
 	hexColorFunction := newTestColorByRange(maxColorHex, minColorHex)
-	return generateSVG(surface, width, height, hexColorFunction), err
+	return generateSVG(surface, width, height, hexColorFunction, out)
 }
 
 func newSurface(pFac polygonFactory, cells int) surface {
@@ -65,21 +67,26 @@ func newSurface(pFac polygonFactory, cells int) surface {
 	return s
 }
 
-func generateSVG(s surface, width int, height int, hcFn hexColorByRange) *bytes.Buffer {
-	var b bytes.Buffer
+func generateSVG(s surface, width int, height int, hcFn hexColorByRange, out io.Writer) error {
 	cells := len(s.polygons)
-	b.WriteString(fmt.Sprintf("<svg xmlns='http://www.w3.org/2000/svg' "+
+	_, err := out.Write([]byte(fmt.Sprintf("<svg xmlns='http://www.w3.org/2000/svg' "+
 		"style='stroke: grey; fill: white; stroke-width: 0.7' "+
-		"width='%d' height='%d'>", width, height))
+		"width='%d' height='%d'>", width, height)))
+	if err != nil {
+		return err
+	}
 
 	for i := 0; i < cells; i++ {
 		for j := 0; j < cells; j++ {
-			b.WriteString(polygonToSVG(s.polygons[i][j], s.maxHeight, s.minHeight, hcFn))
+			_, err = out.Write([]byte(polygonToSVG(s.polygons[i][j], s.maxHeight, s.minHeight, hcFn)))
+			if err != nil {
+				return err
+			}
 		}
 	}
 
-	b.WriteString("</svg>")
-	return &b
+	_, err = out.Write([]byte("</svg>"))
+	return err
 }
 
 func surfaceFunctionMapper(f graphFun, xyrange float64, cells int) corner {

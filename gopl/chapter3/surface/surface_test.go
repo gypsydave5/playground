@@ -1,9 +1,11 @@
 package surface
 
 import (
+	"bytes"
+	"math"
+	"regexp"
 	"testing"
 )
-import "math"
 
 func TestSurfaceFunctionMapperThrowsOnInfinity(t *testing.T) {
 	_, _, _, err := surfaceFunctionMapper(infinitude, 3.0, 10)(1, 1)
@@ -84,14 +86,30 @@ func TestGenerateSVG(t *testing.T) {
 		maxHeight: 1,
 		minHeight: -1,
 	}
-	svg := generateSVG(s, 100, 200, rgbHexColorByRange).String()
+	svg := new(bytes.Buffer)
+	generateSVG(s, 100, 200, rgbHexColorByRange, svg)
 	expectedSVGString := "<svg xmlns='http://www.w3.org/2000/svg' " +
 		"style='stroke: grey; fill: white; stroke-width: 0.7' " +
 		"width='100' height='200'>" +
 		"<polygon points='1,2 3,4 5,6 7,8' fill='#00FF00'/>\n" +
 		"</svg>"
-	if svg != expectedSVGString {
-		t.Errorf("Expected:\n\n%s\n\n, but got\n\n%s\n\n", expectedSVGString, svg)
+	if svg.String() != expectedSVGString {
+		t.Errorf("Expected:\n\n%s\n\n, but got\n\n%s\n\n", expectedSVGString, svg.String())
+	}
+}
+
+func TestExportedSVG(t *testing.T) {
+	f := func(x, y float64) float64 {
+		return x + y
+	}
+	b := new(bytes.Buffer)
+	err := SVG(f, 1, 10, 10, 5, "FF0000", "0000FF", b)
+	if err != nil {
+		t.Error("Expected SVG not to error")
+	}
+	regexpMatch, err := regexp.Match(`.*svg xmlns='http://www.w3.org/2000/svg'.*`, b.Bytes())
+	if !regexpMatch {
+		t.Errorf("Expected SVG to write an SVG string, but got \n\t%v", b)
 	}
 }
 

@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"io"
 	"log"
 	"math"
 	"os"
@@ -20,23 +19,23 @@ var outputFile = flag.String("out", "", "name of file to output SVG to")
 
 func main() {
 	flag.Parse()
-	s, err := surface.SVG(functionOne, *cells, *width, *height, *xyrange, *upperColor, *lowerColor)
-
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	if *outputFile == "" {
-		io.Copy(os.Stdout, s)
-		os.Exit(0)
+		err := surface.SVG(functionOne, *cells, *width, *height, *xyrange, *upperColor, *lowerColor, os.Stdout)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	file, err := os.Create(*outputFile)
 	if err != nil {
 		log.Fatal(err)
 	}
+	err = surface.SVG(functionOne, *cells, *width, *height, *xyrange, *upperColor, *lowerColor, file)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	io.Copy(file, s)
 }
 
 func functionOne(x, y float64) float64 {
