@@ -6,29 +6,29 @@ import (
 import "math"
 
 func TestSurfaceFunctionMapperThrowsOnInfinity(t *testing.T) {
-	_, _, _, err := surfaceFunctionMapper(infinitude)(1, 1)
+	_, _, _, err := surfaceFunctionMapper(infinitude, 3.0, 10)(1, 1)
 	if err == nil {
 		t.Errorf("Expected an error to be emitted")
 	}
 }
 
 func TestSurfaceFunctionMapperThrowsOnNegInfinity(t *testing.T) {
-	_, _, _, err := surfaceFunctionMapper(negInfinitude)(1, 1)
+	_, _, _, err := surfaceFunctionMapper(negInfinitude, 3.0, 10)(1, 1)
 	if err == nil {
 		t.Errorf("Expected an error to be emitted")
 	}
 }
 
 func TestSurfaceFunctionMapperOKWithFinitude(t *testing.T) {
-	_, _, _, err := surfaceFunctionMapper(alwaysZero)(1, 1)
+	_, _, _, err := surfaceFunctionMapper(alwaysZero, 3.0, 10)(1, 1)
 	if err != nil {
 		t.Errorf("Shouldn't error on the finite")
 	}
 }
 
 func TestNewPolygon(t *testing.T) {
-	c := surfaceFunctionMapper(alwaysZero)
-	pf := newProjection(width, height, xyscale, zscale)
+	c := surfaceFunctionMapper(alwaysZero, 30.0, 100)
+	pf := newProjection(600, 320, 600/2.0/30.0, 320*0.4)
 	p := polygonFactoryGenerator(c, pf)(0, 0)
 	expectedP := polygon{
 		ax: 302.5980762113533,
@@ -46,8 +46,8 @@ func TestNewPolygon(t *testing.T) {
 }
 
 func TestGenerateSurface(t *testing.T) {
-	c := surfaceFunctionMapper(alwaysZero)
-	pf := newProjection(width, height, xyscale, zscale)
+	c := surfaceFunctionMapper(alwaysZero, 30.0, 100)
+	pf := newProjection(600, 320, 320/2.0/30.0, 600*0.4)
 	p := polygonFactoryGenerator(c, pf)
 	surface := newSurface(p, 2)
 

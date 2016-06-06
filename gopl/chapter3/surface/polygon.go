@@ -17,10 +17,10 @@ type polygon struct {
 	err error
 }
 
-func newProjection(width, height, xyscale, zscale float64) projectionFunction {
+func newProjection(width, height int, xyscale, zscale float64) projectionFunction {
 	return func(x, y, z float64) (sx, sy float64) {
-		sx = width/2.0 + (x-y)*cos30*xyscale
-		sy = height/2.0 + (x+y)*sin30*xyscale - z*zscale
+		sx = float64(width)/2.0 + (x-y)*cos30*xyscale
+		sy = float64(height)/2.0 + (x+y)*sin30*xyscale - z*zscale
 		return sx, sy
 	}
 }

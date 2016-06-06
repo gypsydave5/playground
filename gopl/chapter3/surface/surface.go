@@ -1,4 +1,4 @@
-// Surface computes an SVG rendering of a 3-D surface function.
+// Package surface computes an SVG rendering of a 3-D surface function.
 package surface
 
 import (
@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"math"
-	"os"
 )
 
 type corner func(int, int) (float64, float64, float64, error)
@@ -17,36 +16,30 @@ type surface struct {
 	minHeight float64
 }
 
-const (
-	width, height = 600, 320            // canvas size in pixels
-	cells         = 100                 // number of grid cells
-	xyrange       = 30.0                // axis ranges (-xyrange..+xyrange)
-	xyscale       = width / 2 / xyrange // pixels per x or y unit
-	zscale        = height * 0.4        // pixels per z unit
-	angle         = math.Pi / 6         // angle of x, y axes (=30°)
-	upperColor    = "00FF00"            // color of surface peaks (rgb hex)
-	lowerColor    = "0000FF"            // color of surface troughs (rgb hex)
-)
+const angle = math.Pi / 6 // angle of x, y axes (=30°)
 
 var sin30, cos30 = math.Sin(angle), math.Cos(angle) // sin(30°), cos(30°)
 
-func main() {
-	corner := surfaceFunctionMapper(f)
+// SVG makes an SVG
+func SVG(f graphFun, cells, width, height int, xyrange float64, upperColor, lowerColor string) (io.Reader, error) {
+	xyscale := float64(width) / 2.0 / xyrange // pixels per x or y unit
+	zscale := float64(height) * 0.4           // pixels per z unit
+
+	corner := surfaceFunctionMapper(f, xyrange, cells)
 	project := newProjection(width, height, xyscale, zscale)
 	polygonFactory := polygonFactoryGenerator(corner, project)
 	surface := newSurface(polygonFactory, cells)
+
 	maxColorHex, err := colorFromHexString(upperColor)
 	if err != nil {
-		os.Stdout.WriteString(err.Error())
-		os.Exit(1)
+		return bytes.NewReader([]byte{}), err
 	}
 	minColorHex, err := colorFromHexString(lowerColor)
 	if err != nil {
-		os.Stdout.WriteString(err.Error())
-		os.Exit(1)
+		return bytes.NewReader([]byte{}), err
 	}
 	hexColorFunction := newTestColorByRange(maxColorHex, minColorHex)
-	io.Copy(os.Stdout, generateSVG(surface, width, height, hexColorFunction))
+	return generateSVG(surface, width, height, hexColorFunction), err
 }
 
 func newSurface(pFac polygonFactory, cells int) surface {
@@ -89,12 +82,12 @@ func generateSVG(s surface, width int, height int, hcFn hexColorByRange) *bytes.
 	return &b
 }
 
-func surfaceFunctionMapper(f graphFun) corner {
+func surfaceFunctionMapper(f graphFun, xyrange float64, cells int) corner {
 	return func(i, j int) (float64, float64, float64, error) {
 		var err error
 		// Find point (x,y) at corner of cell (i,j).
-		x := xyrange * (float64(i)/cells - 0.5)
-		y := xyrange * (float64(j)/cells - 0.5)
+		x := xyrange * (float64(i)/float64(cells) - 0.5)
+		y := xyrange * (float64(j)/float64(cells) - 0.5)
 
 		// Compute surface height z.
 		z := f(x, y)
@@ -107,11 +100,4 @@ func surfaceFunctionMapper(f graphFun) corner {
 		// Project (x,y,z) isometrically onto a 2-D SVG canvas (sx,sy).
 		return x, y, z, err
 	}
-}
-
-func f(x, y float64) float64 {
-	//return (math.Sin(x) * math.Cos(y)) / 4
-	return math.Cos(math.Abs(x)+math.Abs(y)) / 8
-	//r := math.Hypot(x, y) // distance from (0,0)
-	//return math.Sin(r) / r
 }
