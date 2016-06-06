@@ -98,12 +98,31 @@ func TestGenerateSVG(t *testing.T) {
 	}
 }
 
-func TestExportedSVG(t *testing.T) {
-	f := func(x, y float64) float64 {
-		return x + y
+func TestNewOptions(t *testing.T) {
+	opts := NewOptions()
+	if opts.Cells != 100 {
+		t.Error("Expected sensible default options to be generated")
 	}
+	if opts.Width != 600 {
+		t.Error("Expected sensible default options to be generated")
+	}
+	if opts.Height != 320 {
+		t.Error("Expected sensible default options to be generated")
+	}
+	if opts.XYRange != 30.0 {
+		t.Error("Expected sensible default options to be generated")
+	}
+	if opts.UpperColor != "FF0000" {
+		t.Error("Expected sensible default options to be generated")
+	}
+	if opts.LowerColor != "0000FF" {
+		t.Error("Expected sensible default options to be generated")
+	}
+}
+
+func TestExportedSVG(t *testing.T) {
 	b := new(bytes.Buffer)
-	err := SVG(f, 1, 10, 10, 5, "FF0000", "0000FF", b)
+	err := SVG(NewOptions(), b)
 	if err != nil {
 		t.Error("Expected SVG not to error")
 	}

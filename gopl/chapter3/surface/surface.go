@@ -7,8 +7,33 @@ import (
 	"math"
 )
 
+// GraphFunction takes an x and a y argument, and returns a z value. It describes
+// a 3D surface
+type GraphFunction func(x float64, y float64) (z float64)
+
+// Options is the required arguments to generate a 3D surface from a function
+//   function is the GraphFunction describing how to derive z from x and y values
+//   cells is the number of cells that make up the displayed surface
+//   width is the width of the canvas
+//   height is the height of the canvas
+//   xyrange is the range of x both and y, from -xyrange to +xyrange
+//   upperColor is an RGB color represented as a hexadecimal string. It is the
+// color of the cell with the highest calculated z value
+//   lowerColor is an RGB color represented as a hexadecimal string. It is the
+//  color of the cell with the lowest calculated z value
+//
+// All cells will be colored relative to their z value, calculating the appropriate
+// intermediate color betewwn upperColor and lowerColor.
+type Options struct {
+	Function   GraphFunction
+	Cells      int
+	Width      int
+	Height     int
+	XYRange    float64
+	UpperColor string
+	LowerColor string
+}
 type corner func(int, int) (float64, float64, float64, error)
-type graphFun func(float64, float64) float64
 type surface struct {
 	polygons  [][]polygon
 	maxHeight float64
@@ -20,28 +45,38 @@ const angle = math.Pi / 6 // angle of x, y axes (=30°)
 var sin30, cos30 = math.Sin(angle), math.Cos(angle) // sin(30°), cos(30°)
 
 // SVG returns an io.Writer that writes an SVG of the 3D graph described by
-// the function graphFun.
-//   f:
-func SVG(f graphFun, cells, width, height int,
-	xyrange float64, upperColor, lowerColor string, out io.Writer) error {
-	xyscale := float64(width) / 2.0 / xyrange // pixels per x or y unit
-	zscale := float64(height) * 0.4           // pixels per z unit
+// the function GraphFunction in the Options struct. See Options for more details.
+func SVG(o Options, out io.Writer) error {
+	xyscale := float64(o.Width) / 2.0 / o.XYRange // pixels per x or y unit
+	zscale := float64(o.Height) * 0.4             // pixels per z unit
 
-	corner := surfaceFunctionMapper(f, xyrange, cells)
-	project := newProjection(width, height, xyscale, zscale)
+	corner := surfaceFunctionMapper(o.Function, o.XYRange, o.Cells)
+	project := newProjection(o.Width, o.Height, xyscale, zscale)
 	polygonFactory := polygonFactoryGenerator(corner, project)
-	surface := newSurface(polygonFactory, cells)
+	surface := newSurface(polygonFactory, o.Cells)
 
-	maxColorHex, err := colorFromHexString(upperColor)
+	maxColorHex, err := colorFromHexString(o.UpperColor)
 	if err != nil {
 		return err
 	}
-	minColorHex, err := colorFromHexString(lowerColor)
+	minColorHex, err := colorFromHexString(o.LowerColor)
 	if err != nil {
 		return err
 	}
 	hexColorFunction := newTestColorByRange(maxColorHex, minColorHex)
-	return generateSVG(surface, width, height, hexColorFunction, out)
+	return generateSVG(surface, o.Width, o.Height, hexColorFunction, out)
+}
+
+func NewOptions() Options {
+	return Options{
+		Function:   defaultGraphFunction,
+		Cells:      100,
+		Width:      600,
+		Height:     320,
+		XYRange:    30.0,
+		UpperColor: "FF0000",
+		LowerColor: "0000FF",
+	}
 }
 
 func newSurface(pFac polygonFactory, cells int) surface {
@@ -89,7 +124,7 @@ func generateSVG(s surface, width int, height int, hcFn hexColorByRange, out io.
 	return err
 }
 
-func surfaceFunctionMapper(f graphFun, xyrange float64, cells int) corner {
+func surfaceFunctionMapper(f GraphFunction, xyrange float64, cells int) corner {
 	return func(i, j int) (float64, float64, float64, error) {
 		var err error
 		// Find point (x,y) at corner of cell (i,j).
@@ -107,4 +142,9 @@ func surfaceFunctionMapper(f graphFun, xyrange float64, cells int) corner {
 		// Project (x,y,z) isometrically onto a 2-D SVG canvas (sx,sy).
 		return x, y, z, err
 	}
+}
+
+func defaultGraphFunction(x, y float64) float64 {
+	r := math.Hypot(x, y)
+	return math.Sin(r) / r
 }
