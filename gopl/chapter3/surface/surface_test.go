@@ -2,6 +2,7 @@ package surface
 
 import (
 	"bytes"
+	"image/color"
 	"math"
 	"regexp"
 	"testing"
@@ -99,6 +100,9 @@ func TestGenerateSVG(t *testing.T) {
 }
 
 func TestNewOptions(t *testing.T) {
+	red := color.RGBA{255, 0, 0, 0}
+	blue := color.RGBA{0, 0, 255, 0}
+
 	opts := NewOptions()
 	if opts.Cells != 100 {
 		t.Error("Expected sensible default options to be generated")
@@ -112,10 +116,10 @@ func TestNewOptions(t *testing.T) {
 	if opts.XYRange != 30.0 {
 		t.Error("Expected sensible default options to be generated")
 	}
-	if opts.UpperColor != "FF0000" {
+	if opts.UpperColor != red {
 		t.Error("Expected sensible default options to be generated")
 	}
-	if opts.LowerColor != "0000FF" {
+	if opts.LowerColor != blue {
 		t.Error("Expected sensible default options to be generated")
 	}
 }

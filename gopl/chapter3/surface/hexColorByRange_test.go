@@ -1,36 +1,49 @@
 package surface
 
-import "testing"
+import (
+	"image/color"
+	"testing"
+)
 
 // Tests around a custom colour function, calculating a colour in a range between
 // two supplied colors.
-func TestNewColorByRangeMax(t *testing.T) {
-	maxColor, _ := colorFromHexString("FF0000")
-	minColor, _ := colorFromHexString("0000FF")
 
-	hexColorByRange := newTestColorByRange(maxColor, minColor)
+var (
+	red   = color.RGBA{R: uint8(255), G: uint8(0), B: uint8(0)}
+	blue  = color.RGBA{R: uint8(0), G: uint8(0), B: uint8(255)}
+	white = color.RGBA{R: uint8(255), G: uint8(255), B: uint8(255)}
+	black = color.RGBA{R: uint8(0), G: uint8(0), B: uint8(0)}
+)
+
+func TestNewColorByRangeMax(t *testing.T) {
+	maxColor := red
+	minColor := blue
+
+	hexColorByRange := newRGBAinRange(maxColor, minColor)
 
 	maxZ := 1.0
 	minZ := -1.0
 	z := 1.0
 	c := hexColorByRange(maxZ, minZ, z)
-	expectedC := "FF0000"
+
+	expectedC := red
 	if c != expectedC {
 		t.Errorf("Expected %v, got %v", expectedC, c)
 	}
 }
 
 func TestNewColorByRangeMin(t *testing.T) {
-	maxColor, _ := colorFromHexString("FF0000")
-	minColor, _ := colorFromHexString("0000FF")
+	maxColor := red
+	minColor := blue
 
-	hexColorByRange := newTestColorByRange(maxColor, minColor)
+	hexColorByRange := newRGBAinRange(maxColor, minColor)
 
 	maxZ := 1.0
 	minZ := -1.0
 	z := -1.0
 	c := hexColorByRange(maxZ, minZ, z)
-	expectedC := "0000FF"
+	expectedC := blue
+
 	if c != expectedC {
 		t.Errorf("Expected %v, got %v", expectedC, c)
 	}
@@ -51,59 +64,18 @@ func TestCalculateMidByte(t *testing.T) {
 }
 
 func TestNewColorByRangeMid(t *testing.T) {
-	maxColor, _ := colorFromHexString("FFFFFF")
-	minColor, _ := colorFromHexString("000000")
+	maxColor := white
+	minColor := black
 
-	hexColorByRange := newTestColorByRange(maxColor, minColor)
+	hexColorByRange := newRGBAinRange(maxColor, minColor)
 
 	maxZ := 1.0
 	minZ := -1.0
 	z := 0.0
 	c := hexColorByRange(maxZ, minZ, z)
-	expectedC := "7F7F7F"
+	expectedC := color.RGBA{127, 127, 127, 0}
 	if c != expectedC {
 		t.Errorf("Expected %v, got %v", expectedC, c)
-	}
-}
-
-func TestColorFromHexString(t *testing.T) {
-	s := "FF0F10"
-	c, _ := colorFromHexString(s)
-	expectedColor := colorHex{
-		r: '\xFF',
-		g: '\x0F',
-		b: '\x10',
-	}
-	if c != expectedColor {
-		t.Errorf("Expected %v, yet we were given %v\n", expectedColor, c)
-	}
-}
-
-func TestColorFromHexStringErrorsOnTooShort(t *testing.T) {
-	s := "FF0F"
-	_, err := colorFromHexString(s)
-	if err == nil {
-		t.Error("Expected an error, yet there was none")
-	}
-}
-
-func TestColorFromHexStringErrorsOnInvalidHexes(t *testing.T) {
-	s := "FFFFGG"
-	_, err := colorFromHexString(s)
-	if err == nil {
-		t.Error("Expected an error, yet there was none")
-	}
-}
-
-func TestColorHexToString(t *testing.T) {
-	c := colorHex{
-		r: '\xFF',
-		g: '\x0F',
-		b: '\x10',
-	}
-	expected := "FF0F10"
-	if c.String() != expected {
-		t.Errorf("Expected %v, yet we were given %v\n", expected, c.String())
 	}
 }
 
@@ -114,7 +86,7 @@ func TestZColorHexGreen(t *testing.T) {
 	minZ := -1.0
 	z := 0.0
 	c := rgbHexColorByRange(maxZ, minZ, z)
-	expectedC := "00FF00"
+	expectedC := color.RGBA{0, 255, 0, 0}
 	if c != expectedC {
 		t.Errorf("Expected %v, got %v", expectedC, c)
 	}
@@ -125,7 +97,7 @@ func TestZColorHexRed(t *testing.T) {
 	minZ := -1.0
 	z := 1.0
 	c := rgbHexColorByRange(maxZ, minZ, z)
-	expectedC := "FF0000"
+	expectedC := color.RGBA{255, 0, 0, 0}
 	if c != expectedC {
 		t.Errorf("Expected %v, got %v", expectedC, c)
 	}
@@ -136,7 +108,7 @@ func TestZColorHexRedAgain(t *testing.T) {
 	minZ := -0.21285613860128652
 	z := 0.9850673555377986
 	c := rgbHexColorByRange(maxZ, minZ, z)
-	expectedC := "FF0000"
+	expectedC := color.RGBA{255, 0, 0, 0}
 	if c != expectedC {
 		t.Errorf("Expected %v, got %v", expectedC, c)
 	}
@@ -147,7 +119,7 @@ func TestZColorHexBlue(t *testing.T) {
 	minZ := -1.0
 	z := -1.0
 	c := rgbHexColorByRange(maxZ, minZ, z)
-	expectedC := "0000FF"
+	expectedC := color.RGBA{0, 0, 255, 0}
 	if c != expectedC {
 		t.Errorf("Expected %v, got %v", expectedC, c)
 	}
@@ -158,7 +130,7 @@ func TestZColorHexMid(t *testing.T) {
 	minZ := -1.0
 	z := 0.5
 	c := rgbHexColorByRange(maxZ, minZ, z)
-	expectedC := "7F7F00"
+	expectedC := color.RGBA{127, 127, 0, 0}
 	if c != expectedC {
 		t.Errorf("Expected %v, got %v", expectedC, c)
 	}
@@ -169,8 +141,27 @@ func TestZColorHexLowerMid(t *testing.T) {
 	minZ := -1.0
 	z := -0.5
 	c := rgbHexColorByRange(maxZ, minZ, z)
-	expectedC := "007F7F"
+	expectedC := color.RGBA{0, 127, 127, 0}
 	if c != expectedC {
 		t.Errorf("Expected %v, got %v", expectedC, c)
+	}
+}
+
+func TestRGBAToHex(t *testing.T) {
+	var hex string
+
+	hex = rgbaToHex(red)
+	if hex != "FF0000" {
+		t.Error("Expected 'FF0000', but got", hex)
+	}
+
+	hex = rgbaToHex(blue)
+	if hex != "0000FF" {
+		t.Error("Expected '0000FF', but got", hex)
+	}
+
+	hex = rgbaToHex(black)
+	if hex != "000000" {
+		t.Error("Expected '000000', but got", hex)
 	}
 }

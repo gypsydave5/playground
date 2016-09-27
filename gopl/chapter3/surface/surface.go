@@ -3,6 +3,7 @@ package surface
 
 import (
 	"fmt"
+	"image/color"
 	"io"
 	"math"
 )
@@ -30,8 +31,8 @@ type Options struct {
 	Width      int
 	Height     int
 	XYRange    float64
-	UpperColor string
-	LowerColor string
+	UpperColor color.RGBA
+	LowerColor color.RGBA
 }
 type corner func(int, int) (float64, float64, float64, error)
 type surface struct {
@@ -55,27 +56,26 @@ func SVG(o Options, out io.Writer) error {
 	polygonFactory := polygonFactoryGenerator(corner, project)
 	surface := newSurface(polygonFactory, o.Cells)
 
-	maxColorHex, err := colorFromHexString(o.UpperColor)
-	if err != nil {
-		return err
-	}
-	minColorHex, err := colorFromHexString(o.LowerColor)
-	if err != nil {
-		return err
-	}
-	hexColorFunction := newTestColorByRange(maxColorHex, minColorHex)
-	return generateSVG(surface, o.Width, o.Height, hexColorFunction, out)
+	maxColor := o.UpperColor
+	minColor := o.LowerColor
+
+	rgbaInRange := newRGBAinRange(maxColor, minColor)
+	return generateSVG(surface, o.Width, o.Height, rgbaInRange, out)
 }
 
+// NewOptions returns an options struct for the surface with sane defaults set
 func NewOptions() Options {
+	red := color.RGBA{255, 0, 0, 0}
+	blue := color.RGBA{0, 0, 255, 0}
+
 	return Options{
 		Function:   defaultGraphFunction,
 		Cells:      100,
 		Width:      600,
 		Height:     320,
 		XYRange:    30.0,
-		UpperColor: "FF0000",
-		LowerColor: "0000FF",
+		UpperColor: red,
+		LowerColor: blue,
 	}
 }
 
@@ -102,7 +102,7 @@ func newSurface(pFac polygonFactory, cells int) surface {
 	return s
 }
 
-func generateSVG(s surface, width int, height int, hcFn hexColorByRange, out io.Writer) error {
+func generateSVG(s surface, width int, height int, rgbaFn rgbaByRange, out io.Writer) error {
 	cells := len(s.polygons)
 	_, err := out.Write([]byte(fmt.Sprintf("<svg xmlns='http://www.w3.org/2000/svg' "+
 		"style='stroke: grey; fill: white; stroke-width: 0.7' "+
@@ -113,7 +113,12 @@ func generateSVG(s surface, width int, height int, hcFn hexColorByRange, out io.
 
 	for i := 0; i < cells; i++ {
 		for j := 0; j < cells; j++ {
-			_, err = out.Write([]byte(polygonToSVG(s.polygons[i][j], s.maxHeight, s.minHeight, hcFn)))
+			svgCell := []byte(
+				polygonToSVG(s.polygons[i][j], s.maxHeight, s.minHeight, rgbaFn),
+			)
+
+			_, err = out.Write(svgCell)
+
 			if err != nil {
 				return err
 			}

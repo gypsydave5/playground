@@ -25,10 +25,11 @@ func newProjection(width, height int, xyscale, zscale float64) projectionFunctio
 	}
 }
 
-func polygonToSVG(p polygon, maxHeight float64, minHeight float64, hcFn hexColorByRange) string {
+func polygonToSVG(p polygon, maxHeight float64, minHeight float64, hcFn rgbaByRange) string {
 	color := hcFn(maxHeight, minHeight, p.z)
+	hex := rgbaToHex(color)
 	return fmt.Sprintf("<polygon points='%g,%g %g,%g %g,%g %g,%g' fill='#%v'/>\n",
-		p.ax, p.ay, p.bx, p.by, p.cx, p.cy, p.dx, p.dy, color)
+		p.ax, p.ay, p.bx, p.by, p.cx, p.cy, p.dx, p.dy, hex)
 }
 
 func polygonFactoryGenerator(c corner, project projectionFunction) polygonFactory {
