@@ -22,5 +22,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		log.Print(err)
 	}
 
+	opts = applyOptions(opts, r.Form)
+
 	surface.SVG(opts, w)
 }
