@@ -1,6 +1,7 @@
 package main
 
 import (
+	"image/color"
 	"net/http/httptest"
 	"net/url"
 	"testing"
@@ -61,11 +62,44 @@ func TestUrlParamsXYRange(t *testing.T) {
 }
 
 func TestUrlParamsLowerColor(t *testing.T) {
-	params := map[string][]string{"lowercolor": {"bada55"}}
+	params := map[string][]string{"lowercolor": {"ff00ff"}}
 	urlParams := url.Values(params)
 	opts := applyOptions(surface.NewOptions(), urlParams)
+	expectedRGBA := color.RGBA{255, 0, 255, 0}
 
-	if opts.LowerColor != "bada55" {
+	if opts.LowerColor != expectedRGBA {
 		t.Error("Expected LoweColor to be 'bada55', but got: ", opts.LowerColor)
+	}
+}
+
+func TestUrlParamsLowerColorError(t *testing.T) {
+	params := map[string][]string{"lowercolor": {"PUNKER"}}
+	urlParams := url.Values(params)
+	opts := applyOptions(surface.NewOptions(), urlParams)
+	expectedRGBA := color.RGBA{0, 0, 255, 0}
+
+	if opts.LowerColor != expectedRGBA {
+		t.Error("Expected LoweColor to be: ", expectedRGBA, " but got: ", opts.LowerColor)
+	}
+}
+
+func TestRGBAfromHex(t *testing.T) {
+	hex := "FF7F01"
+
+	rgba, _ := rgbaFromHex(hex)
+
+	expectedRGBA := color.RGBA{255, 127, 1, 0}
+	if rgba != expectedRGBA {
+		t.Error("Expected: ", expectedRGBA, " but got: ", rgba)
+	}
+}
+
+func TestRGBAfromHexError(t *testing.T) {
+	hex := "BOOMER"
+
+	_, err := rgbaFromHex(hex)
+
+	if err == nil {
+		t.Error("Expected: an error,  but got: ", err)
 	}
 }

@@ -1,6 +1,8 @@
 package main
 
 import (
+	"encoding/hex"
+	"image/color"
 	"log"
 	"net/http"
 	"net/url"
@@ -66,8 +68,27 @@ func applyOptions(opts surface.Options, params url.Values) surface.Options {
 
 	if _, pres := params["lowercolor"]; pres {
 		lowercolor := params["lowercolor"][0]
-		opts.LowerColor = lowercolor
+		rgba, err := rgbaFromHex(lowercolor)
+		if err != nil {
+			log.Println("unexpected parameter [lowercolor]: ", params["lowercolor"][0])
+		} else {
+			opts.LowerColor = rgba
+		}
 	}
 
 	return opts
+}
+
+func rgbaFromHex(colorHex string) (color.RGBA, error) {
+	var c color.RGBA
+
+	bytes, err := hex.DecodeString(colorHex)
+	if err != nil {
+		return c, err
+	}
+
+	c.R = bytes[0]
+	c.G = bytes[1]
+	c.B = bytes[2]
+	return c, nil
 }
