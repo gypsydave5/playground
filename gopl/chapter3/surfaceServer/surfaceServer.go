@@ -3,6 +3,8 @@ package main
 import (
 	"log"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/gypsydave5/playground/gopl/chapter3/surface"
 )
@@ -23,4 +25,35 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	surface.SVG(opts, w)
+}
+
+func applyOptions(opts surface.Options, params url.Values) surface.Options {
+	if _, pres := params["cells"]; pres {
+		cells, err := strconv.Atoi(params["cells"][0])
+		if err != nil {
+			log.Println("unexpected parameter [cells]: ", params["cells"][0])
+		} else {
+			opts.Cells = cells
+		}
+	}
+
+	if _, pres := params["width"]; pres {
+		width, err := strconv.Atoi(params["width"][0])
+		if err != nil {
+			log.Println("unexpected parameter [width]: ", params["width"][0])
+		} else {
+			opts.Width = width
+		}
+	}
+
+	if _, pres := params["height"]; pres {
+		height, err := strconv.Atoi(params["height"][0])
+		if err != nil {
+			log.Println("unexpected parameter [height]: ", params["height"][0])
+		} else {
+			opts.Height = height
+		}
+	}
+
+	return opts
 }
