@@ -55,5 +55,19 @@ func applyOptions(opts surface.Options, params url.Values) surface.Options {
 		}
 	}
 
+	if _, pres := params["xyrange"]; pres {
+		xyrange, err := strconv.ParseFloat(params["xyrange"][0], 32)
+		if err != nil {
+			log.Println("unexpected parameter [xyrange]: ", params["xyrange"][0])
+		} else {
+			opts.XYRange = xyrange
+		}
+	}
+
+	if _, pres := params["lowercolor"]; pres {
+		lowercolor := params["lowercolor"][0]
+		opts.LowerColor = lowercolor
+	}
+
 	return opts
 }

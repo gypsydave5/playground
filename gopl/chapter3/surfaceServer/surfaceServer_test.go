@@ -49,3 +49,23 @@ func TestUrlParamsHeight(t *testing.T) {
 		t.Error("Expected height to be 500, but got: ", opts.Height)
 	}
 }
+
+func TestUrlParamsXYRange(t *testing.T) {
+	params := map[string][]string{"xyrange": {"45.0"}}
+	urlParams := url.Values(params)
+	opts := applyOptions(surface.NewOptions(), urlParams)
+
+	if opts.XYRange != 45.0 {
+		t.Error("Expected XYRange to be 45.0, but got: ", opts.XYRange)
+	}
+}
+
+func TestUrlParamsLowerColor(t *testing.T) {
+	params := map[string][]string{"lowercolor": {"bada55"}}
+	urlParams := url.Values(params)
+	opts := applyOptions(surface.NewOptions(), urlParams)
+
+	if opts.LowerColor != "bada55" {
+		t.Error("Expected LoweColor to be 'bada55', but got: ", opts.LowerColor)
+	}
+}
