@@ -55,5 +55,15 @@ func applyOptions(opts surface.Options, params url.Values) surface.Options {
 		}
 	}
 
+	if _, pres := params["uppercolor"]; pres {
+		uppercolor := params["uppercolor"][0]
+		rgba, err := rgbaFromHex(uppercolor)
+		if err != nil {
+			log.Println("unexpected parameter [uppercolor]: ", params["uppercolor"][0])
+		} else {
+			opts.UpperColor = rgba
+		}
+	}
+
 	return opts
 }

@@ -55,7 +55,7 @@ func TestUrlParamsLowerColor(t *testing.T) {
 	expectedRGBA := color.RGBA{255, 0, 255, 0}
 
 	if opts.LowerColor != expectedRGBA {
-		t.Error("Expected LoweColor to be 'bada55', but got: ", opts.LowerColor)
+		t.Error("Expected LowerColor to be 'bada55', but got: ", opts.LowerColor)
 	}
 }
 
@@ -66,6 +66,17 @@ func TestUrlParamsLowerColorError(t *testing.T) {
 	expectedRGBA := color.RGBA{0, 0, 255, 0}
 
 	if opts.LowerColor != expectedRGBA {
-		t.Error("Expected LoweColor to be: ", expectedRGBA, " but got: ", opts.LowerColor)
+		t.Error("Expected LowerColor to be: ", expectedRGBA, " but got: ", opts.LowerColor)
+	}
+}
+
+func TestUrlParamsUpperColor(t *testing.T) {
+	params := map[string][]string{"uppercolor": {"7f7f7f"}}
+	urlParams := url.Values(params)
+	opts := applyOptions(surface.NewOptions(), urlParams)
+	expectedRGBA := color.RGBA{127, 127, 127, 0}
+
+	if opts.UpperColor != expectedRGBA {
+		t.Error("Expected UpperColor to be: ", expectedRGBA, " but got: ", opts.UpperColor)
 	}
 }
