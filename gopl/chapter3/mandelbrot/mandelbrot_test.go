@@ -12,7 +12,8 @@ func TestMandleBrotOrigin(t *testing.T) {
 
 	expectedColor := color.Black
 
-	c := mandelbrotShade(num, iterations, contrast)
+	tries, escaped := escapeIteration(num, iterations)
+	c := mandelbrotShade(tries, escaped, contrast)
 
 	if c != expectedColor {
 		t.Error("Expected ", expectedColor, ", but got: ", c)
@@ -26,7 +27,8 @@ func TestMandleBrotEdge(t *testing.T) {
 
 	expectedColor := color.Gray{165}
 
-	c := mandelbrotShade(num, iterations, contrast)
+	tries, escaped := escapeIteration(num, iterations)
+	c := mandelbrotShade(tries, escaped, contrast)
 
 	if c != expectedColor {
 		t.Error("Expected ", expectedColor, ", but got: ", c)
@@ -40,7 +42,8 @@ func TestMandleBrotNegativeEdge(t *testing.T) {
 
 	expectedColor := color.Gray{165}
 
-	c := mandelbrotShade(num, iterations, contrast)
+	tries, escaped := escapeIteration(num, iterations)
+	c := mandelbrotShade(tries, escaped, contrast)
 
 	if c != expectedColor {
 		t.Error("Expected ", expectedColor, ", but got: ", c)

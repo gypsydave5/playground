@@ -43,7 +43,9 @@ func generateMandelbrot(iterations uint8, width int, height int) *image.RGBA {
 		for px := 0; px < width; px++ {
 			x := float64(px)/float64(width)*(xmax-xmin) + xmin
 			z := complex(x, y)
-			img.Set(px, py, mandelbrotShade(z, iterations, contrast))
+			tries, escaped := escapeIteration(z, iterations)
+			shade := mandelbrotShade(tries, escaped, contrast)
+			img.Set(px, py, shade)
 		}
 	}
 	return img
@@ -57,14 +59,12 @@ func rgbaToPalleted(rgba *image.RGBA) *image.Paletted {
 	return palettedImage
 }
 
-func mandelbrotShade(z complex128, iterations uint8, contrast uint8) color.Color {
-	tries, escaped := escapeIteration(z, iterations)
-
+func mandelbrotShade(tries uint8, escaped bool, contrast int) color.Color {
 	if !escaped {
 		return color.Black
 	}
 
-	return color.Gray{255 - contrast*tries}
+	return color.Gray{255 - uint8(contrast)*tries}
 }
 
 func escapeIteration(z complex128, maxIterations uint8) (iterations uint8, escaped bool) {
