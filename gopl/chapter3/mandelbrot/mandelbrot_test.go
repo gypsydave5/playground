@@ -5,10 +5,9 @@ import (
 	"testing"
 )
 
-const iterations = 200
-const contrast = 15
-
 func TestMandleBrotOrigin(t *testing.T) {
+	const iterations = 200
+	const contrast = 15
 	num := complex(0, 0)
 
 	expectedColor := color.Black
@@ -21,6 +20,8 @@ func TestMandleBrotOrigin(t *testing.T) {
 }
 
 func TestMandleBrotEdge(t *testing.T) {
+	const iterations = 200
+	const contrast = 15
 	num := complex(-1, 0.4)
 
 	expectedColor := color.Gray{165}
@@ -33,6 +34,8 @@ func TestMandleBrotEdge(t *testing.T) {
 }
 
 func TestMandleBrotNegativeEdge(t *testing.T) {
+	const iterations = 200
+	const contrast = 15
 	num := complex(-1, -0.4)
 
 	expectedColor := color.Gray{165}
