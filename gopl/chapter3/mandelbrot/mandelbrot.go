@@ -9,11 +9,14 @@ import (
 	"os"
 )
 
+const (
+	xmin, ymin, xmax, ymax = -4, -4, +4, +4
+	width, height          = 1024, 1024
+)
+
 func main() {
-	const (
-		xmin, ymin, xmax, ymax = -2, -2, +2, +2
-		width, height          = 1024, 1024
-	)
+	const iterations = 1
+	const contrast = 15
 
 	img := image.NewRGBA(image.Rect(0, 0, width, height))
 	for py := 0; py < height; py++ {
@@ -22,25 +25,35 @@ func main() {
 		for px := 0; px < width; px++ {
 			x := float64(px)/width*(xmax-xmin) + xmin
 			z := complex(x, y)
-			// image point (px, py) represents complex value z.
 
-			img.Set(px, py, mandelbrot(z))
+			// image point (px, py) represents complex value z.
+			img.Set(px, py, mandelbrotShade(z, iterations, contrast))
 		}
 	}
 
 	png.Encode(os.Stdout, img)
 }
 
-func mandelbrot(z complex128) color.Color {
-	const iterations = 200
-	const contrast = 15
+func mandelbrotShade(z complex128, iterations uint8, contrast uint8) color.Color {
+	tries, escaped := escapeIteration(z, iterations)
 
+	if !escaped {
+		return color.Black
+	}
+
+	return color.Gray{255 - contrast*tries}
+}
+
+func escapeIteration(z complex128, maxIterations uint8) (iterations uint8, escaped bool) {
 	var v complex128
-	for n := uint8(0); n < iterations; n++ {
+
+	for iterations = uint8(0); iterations < maxIterations; iterations++ {
 		v = v*v + z
+
 		if cmplx.Abs(v) > 2 {
-			return color.Gray{255 - contrast*n}
+			return iterations, true
 		}
 	}
-	return color.Black
+
+	return iterations, false
 }
