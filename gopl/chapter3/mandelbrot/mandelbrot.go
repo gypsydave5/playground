@@ -43,6 +43,7 @@ func generateMandelbrot(iterations uint8, width int, height int) *image.RGBA {
 		for px := 0; px < width; px++ {
 			x := float64(px)/float64(width)*(xmax-xmin) + xmin
 			z := complex(x, y)
+
 			tries, escaped := escapeIteration(z, iterations)
 			shade := mandelbrotShade(tries, escaped, contrast)
 			img.Set(px, py, shade)
