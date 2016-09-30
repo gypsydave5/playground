@@ -34,40 +34,37 @@ func TestEscapeIterationNegativeRealNeverEscapes(t *testing.T) {
 	}
 }
 
-func TestHSVColorBlack(t *testing.T) {
-	h := HSVA{0, 0, 0, 1}
-
-	r, g, b, _ := h.RGBA()
-	ar, ag, ab, _ := color.Black.RGBA()
-
-	if r != ar {
-		t.Error("Expected : ", ar, "but got : ", r)
+func TestHSVColors(t *testing.T) {
+	hsvas := []HSVA{
+		HSVA{0, 0, 0, 1},
+		HSVA{0, 0, 1, 1},
+		HSVA{0, 1, 1, 1},
+	}
+	colors := []color.Color{
+		color.Black,
+		color.White,
+		color.RGBA{0xff, 0, 0, 0xff},
 	}
 
-	if g != ab {
-		t.Error("Expected : ", ag, "but got : ", g)
-	}
+	for i, h := range hsvas {
+		hr, hb, hg, ha := h.RGBA()
+		cr, cb, cg, ca := colors[i].RGBA()
 
-	if b != ag {
-		t.Error("Expected : ", ab, "but got : ", b)
-	}
-}
+		if hr != cr {
+			t.Error("Expected red : ", cr, "but got : ", hr)
+		}
 
-func TestHSVColorWhite(t *testing.T) {
-	h := HSVA{0, 0, 1, 1}
+		if hg != cb {
+			t.Error("Expected green : ", cg, "but got : ", hg)
+		}
 
-	r, g, b, _ := h.RGBA()
-	ar, ag, ab, _ := color.White.RGBA()
+		if hb != cg {
+			t.Error("Expected blue : ", cb, "but got : ", hb)
+		}
 
-	if r != ar {
-		t.Error("Expected : ", ar, "but got : ", r)
-	}
+		if ha != ca {
+			t.Error("Expected alpha : ", ca, "but got : ", ha)
+		}
 
-	if g != ab {
-		t.Error("Expected : ", ag, "but got : ", g)
-	}
-
-	if b != ag {
-		t.Error("Expected : ", ab, "but got : ", b)
 	}
 }

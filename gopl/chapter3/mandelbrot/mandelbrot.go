@@ -22,6 +22,7 @@ type HSVA struct {
 	A float64
 }
 
+// RGBA returns the HSVA color as RGBA values as per the color.Color interface
 func (h HSVA) RGBA() (r uint32, g uint32, b uint32, a uint32) {
 	var rf, gf, bf, af float64
 
@@ -99,6 +100,14 @@ func mandelbrotShade(tries uint8, escaped bool, contrast int) color.Color {
 	return color.Gray{255 - uint8(contrast)*tries}
 }
 
+func colorShade(tries uint8, escaped bool, zFinal complex128) color.Color {
+	if !escaped {
+		return color.Black
+	}
+
+	hsvColor := smoothHSV(tries, zFinal)
+	return hsvColor
+}
 
 func escapeIteration(z complex128, maxIterations uint8) (iterations uint8, escaped bool, zFinal complex128) {
 	var v complex128
