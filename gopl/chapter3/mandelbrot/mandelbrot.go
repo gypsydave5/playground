@@ -5,11 +5,41 @@ import (
 	"image"
 	"image/color"
 	"image/gif"
+	"math"
 	"math/cmplx"
 	"os"
 
 	"github.com/andybons/gogif"
 )
+
+// HSVA represents colour by hue, saturation, value and alpha.
+// Hue should be between 0 and 360
+// Saturation, value and alpha between 0 and 1
+type HSVA struct {
+	H float64
+	S float64
+	V float64
+	A float64
+}
+
+func (h HSVA) RGBA() (r uint32, g uint32, b uint32, a uint32) {
+	var rf, gf, bf, af float64
+
+	c := h.S * h.V
+	x := c * (1 - math.Abs(math.Mod(h.H/60, 2.0)-1.0))
+	m := h.V - c
+
+	rf = c
+	gf = x
+	bf = 0
+	af = h.A
+
+	r = uint32((rf + m) * 0xffff)
+	g = uint32((gf + m) * 0xffff)
+	b = uint32((bf + m) * 0xffff)
+	a = uint32(af * 0xffff)
+	return r, g, b, a
+}
 
 const (
 	xmin, ymin, xmax, ymax = -2, -2, +2, +2
@@ -44,7 +74,8 @@ func generateMandelbrot(iterations uint8, width int, height int) *image.RGBA {
 			x := float64(px)/float64(width)*(xmax-xmin) + xmin
 			z := complex(x, y)
 
-			tries, escaped := escapeIteration(z, iterations)
+			tries, escaped, _ := escapeIteration(z, iterations)
+
 			shade := mandelbrotShade(tries, escaped, contrast)
 			img.Set(px, py, shade)
 		}
@@ -68,16 +99,17 @@ func mandelbrotShade(tries uint8, escaped bool, contrast int) color.Color {
 	return color.Gray{255 - uint8(contrast)*tries}
 }
 
-func escapeIteration(z complex128, maxIterations uint8) (iterations uint8, escaped bool) {
+
+func escapeIteration(z complex128, maxIterations uint8) (iterations uint8, escaped bool, zFinal complex128) {
 	var v complex128
 
 	for iterations = uint8(0); iterations < maxIterations; iterations++ {
 		v = v*v + z
 
 		if cmplx.Abs(v) > 2 {
-			return iterations, true
+			return iterations, true, v
 		}
 	}
 
-	return iterations, false
+	return iterations, false, v
 }
