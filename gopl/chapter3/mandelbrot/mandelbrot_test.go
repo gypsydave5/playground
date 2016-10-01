@@ -39,11 +39,15 @@ func TestHSVColors(t *testing.T) {
 		HSVA{0, 0, 0, 1},
 		HSVA{0, 0, 1, 1},
 		HSVA{0, 1, 1, 1},
+		HSVA{120, 1, 1, 1},
+		HSVA{240, 1, 1, 1},
 	}
 	colors := []color.Color{
 		color.Black,
 		color.White,
 		color.RGBA{0xff, 0, 0, 0xff},
+		color.RGBA{0, 0xff, 0, 0xff},
+		color.RGBA{0, 0, 0xff, 0xff},
 	}
 
 	for i, h := range hsvas {
@@ -51,14 +55,14 @@ func TestHSVColors(t *testing.T) {
 		cr, cb, cg, ca := colors[i].RGBA()
 
 		if hr != cr {
-			t.Error("Expected red : ", cr, "but got : ", hr)
+			t.Errorf("Expected red : %v, but got %v", cr, hr)
 		}
 
-		if hg != cb {
+		if hg != cg {
 			t.Error("Expected green : ", cg, "but got : ", hg)
 		}
 
-		if hb != cg {
+		if hb != cb {
 			t.Error("Expected blue : ", cb, "but got : ", hb)
 		}
 

@@ -30,15 +30,29 @@ func (h HSVA) RGBA() (r uint32, g uint32, b uint32, a uint32) {
 	x := c * (1 - math.Abs(math.Mod(h.H/60, 2.0)-1.0))
 	m := h.V - c
 
-	rf = c
-	gf = x
-	bf = 0
-	af = h.A
+	switch {
+	case h.H <= 60:
+		rf = c
+		gf = x
+		bf = 0
+		af = h.A
+	case h.H <= 120:
+		rf = x
+		gf = c
+		bf = 0
+		af = h.A
+	case h.H <= 240:
+		rf = x
+		gf = 0
+		bf = c
+		af = h.A
+	}
 
 	r = uint32((rf + m) * 0xffff)
 	g = uint32((gf + m) * 0xffff)
 	b = uint32((bf + m) * 0xffff)
 	a = uint32(af * 0xffff)
+
 	return r, g, b, a
 }
 
