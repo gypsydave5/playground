@@ -43,9 +43,9 @@ func generateMandelbrot(iterations uint8, width int, height int) *image.RGBA {
 			x := float64(px)/float64(width)*(xmax-xmin) + xmin
 			z := complex(x, y)
 
-			tries, escaped, _ := escapeIteration(z, iterations)
+			tries, escaped, zFinal := escapeIteration(z, iterations)
 
-			shade := mandelbrotShade(tries, escaped, contrast)
+			shade := colorShade(tries, escaped, contrast, zFinal)
 			img.Set(px, py, shade)
 		}
 	}
@@ -60,7 +60,7 @@ func rgbaToPalleted(rgba *image.RGBA) *image.Paletted {
 	return palettedImage
 }
 
-func mandelbrotShade(tries uint8, escaped bool, contrast int) color.Color {
+func greyShade(tries uint8, escaped bool, contrast int, zFinal complex128) color.Color {
 	if !escaped {
 		return color.Black
 	}
@@ -68,13 +68,12 @@ func mandelbrotShade(tries uint8, escaped bool, contrast int) color.Color {
 	return color.Gray{255 - uint8(contrast)*tries}
 }
 
-func colorShade(tries uint8, escaped bool, zFinal complex128) color.Color {
+func colorShade(tries uint8, escaped bool, contrast int, zFinal complex128) color.Color {
 	if !escaped {
 		return color.Black
 	}
 
-	hsvColor := smoothHSV(tries, zFinal)
-	return hsvColor
+	return smoothHSV(tries, zFinal)
 }
 
 func escapeIteration(z complex128, maxIterations uint8) (iterations uint8, escaped bool, zFinal complex128) {
@@ -89,4 +88,15 @@ func escapeIteration(z complex128, maxIterations uint8) (iterations uint8, escap
 	}
 
 	return iterations, false, v
+}
+
+func smoothHSV(iteration uint8, zFinal complex128) HSVA {
+	hue := math.Abs((float64(iteration) / float64(iterations)) * 360)
+
+	return HSVA{
+		H: hue,
+		S: 0.8,
+		V: 1.0,
+		A: 1.0,
+	}
 }
