@@ -31,20 +31,35 @@ func (h HSVA) RGBA() (r uint32, g uint32, b uint32, a uint32) {
 	m := h.V - c
 
 	switch {
-	case h.H <= 60:
+	case h.H < 60:
 		rf = c
 		gf = x
 		bf = 0
 		af = h.A
-	case h.H <= 120:
+	case h.H < 120:
 		rf = x
 		gf = c
 		bf = 0
 		af = h.A
-	case h.H <= 240:
+	case h.H < 180:
+		rf = 0
+		gf = c
+		bf = x
+		af = h.A
+	case h.H < 240:
+		rf = 0
+		gf = x
+		bf = c
+		af = h.A
+	case h.H < 300:
 		rf = x
 		gf = 0
 		bf = c
+		af = h.A
+	case h.H < 360:
+		rf = c
+		gf = 0
+		bf = x
 		af = h.A
 	}
 
