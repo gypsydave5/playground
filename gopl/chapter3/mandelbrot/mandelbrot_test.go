@@ -1,11 +1,20 @@
 package main
 
 import (
+	"fmt"
 	"image/color"
-	"math"
+	"math/rand"
+	"reflect"
 	"testing"
 	"testing/quick"
 )
+
+type neg2ToZeroPt25 float64
+
+func (m neg2ToZeroPt25) Generate(rand *rand.Rand, size int) reflect.Value {
+	mn := neg2ToZeroPt25((rand.Float64() * 2.25) - 2)
+	return reflect.ValueOf(mn)
+}
 
 func TestEscapeIterationZeroNeverEscapes(t *testing.T) {
 	f := func(iterations uint8) bool {
@@ -21,10 +30,10 @@ func TestEscapeIterationZeroNeverEscapes(t *testing.T) {
 }
 
 func TestEscapeIterationNegativeRealNeverEscapes(t *testing.T) {
-	f := func(iterations uint8, real float64) bool {
-		fromNeg2toPoint25 := (math.Abs(math.Mod(real, 2.2499999))) - 2
+	f := func(iterations uint8, real neg2ToZeroPt25) bool {
 
-		num := complex(fromNeg2toPoint25, 0)
+		fmt.Println(real)
+		num := complex(real, 0)
 		_, escaped, _ := escapeIteration(num, iterations)
 		return !escaped
 	}
