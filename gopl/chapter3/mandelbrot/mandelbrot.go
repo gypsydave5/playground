@@ -5,6 +5,7 @@ import (
 	"image"
 	"image/color"
 	"image/gif"
+	"log"
 	"math"
 	"math/cmplx"
 	"os"
@@ -14,20 +15,21 @@ import (
 
 const (
 	xmin, ymin, xmax, ymax = -2, -2, +2, +2
-	width, height          = 1024, 1024
-	iterations             = 60
+	width, height          = 256, 256
+	maxIterations          = 10
+	startingIteration      = 5
 	contrast               = 15
 	delay                  = 20
 )
 
 func main() {
-	anim := gif.GIF{LoopCount: iterations}
-	animateMandelbrot(iterations, width, height, &anim)
+	anim := gif.GIF{LoopCount: maxIterations}
+	animateMandelbrot(maxIterations, startingIteration, width, height, &anim)
 	gif.EncodeAll(os.Stdout, &anim)
 }
 
-func animateMandelbrot(maxIterations uint8, width int, height int, anim *gif.GIF) {
-	for i := uint8(0); i < iterations; i++ {
+func animateMandelbrot(maxIterations, startingIteration uint8, width, height int, anim *gif.GIF) {
+	for i := uint8(startingIteration); i < maxIterations; i++ {
 		img := generateMandelbrot(i, width, height)
 		palettedImage := rgbaToPalleted(img)
 		anim.Delay = append(anim.Delay, delay)
@@ -35,7 +37,7 @@ func animateMandelbrot(maxIterations uint8, width int, height int, anim *gif.GIF
 	}
 }
 
-func generateMandelbrot(iterations uint8, width int, height int) *image.RGBA {
+func generateMandelbrot(iterations uint8, width, height int) *image.RGBA {
 	img := image.NewRGBA(image.Rect(0, 0, width, height))
 	for py := 0; py < height; py++ {
 		y := float64(py)/float64(height)*(ymax-ymin) + ymin
@@ -45,7 +47,7 @@ func generateMandelbrot(iterations uint8, width int, height int) *image.RGBA {
 
 			tries, escaped, zFinal := escapeIteration(z, iterations)
 
-			shade := colorShade(tries, escaped, contrast, zFinal)
+			shade := colorShade(tries, iterations, escaped, contrast, zFinal)
 			img.Set(px, py, shade)
 		}
 	}
@@ -68,30 +70,29 @@ func greyShade(tries uint8, escaped bool, contrast int, zFinal complex128) color
 	return color.Gray{255 - uint8(contrast)*tries}
 }
 
-func colorShade(tries uint8, escaped bool, contrast int, zFinal complex128) color.Color {
+func colorShade(tries, maxTries uint8, escaped bool, contrast int, zFinal complex128) color.Color {
 	if !escaped {
 		return color.Black
 	}
 
-	return smoothHSV(tries, zFinal)
+	return smoothHSV(tries, maxTries, zFinal)
 }
 
-func escapeIteration(z complex128, maxIterations uint8) (iterations uint8, escaped bool, zFinal complex128) {
+func escapeIteration(z complex128, mi uint8) (i uint8, escaped bool, zFinal complex128) {
 	var v complex128
-
-	for iterations = uint8(0); iterations < maxIterations; iterations++ {
+	for i = uint8(0); i < mi; i++ {
 		v = v*v + z
-
 		if cmplx.Abs(v) > 2 {
-			return iterations, true, v
+			return i, true, v
 		}
 	}
 
-	return iterations, false, v
+	return i, false, v
 }
 
-func smoothHSV(iteration uint8, zFinal complex128) HSVA {
-	hue := math.Abs((float64(iteration) / float64(iterations)) * 360)
+func smoothHSV(tries, maxTries uint8, zFinal complex128) HSVA {
+	hue := math.Abs((float64(tries) / float64(maxTries)) * 360)
+	log.Println("Hue : ", hue)
 
 	return HSVA{
 		H: hue,
