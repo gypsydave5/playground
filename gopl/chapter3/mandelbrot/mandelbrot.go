@@ -5,6 +5,8 @@ import (
 	"image"
 	"image/color"
 	"image/gif"
+	"image/png"
+	"io"
 	"log"
 	"math"
 	"math/cmplx"
@@ -15,17 +17,27 @@ import (
 
 const (
 	xmin, ymin, xmax, ymax = -2, -2, +2, +2
-	width, height          = 256, 256
-	maxIterations          = 10
-	startingIteration      = 5
+	width, height          = 1024, 1024
+	maxIterations          = 40
+	startingIteration      = 39
 	contrast               = 15
 	delay                  = 20
 )
 
 func main() {
+	//animateGIF(os.Stdout)
+	makePNG(os.Stdout)
+}
+
+func makePNG(w io.Writer) {
+	img := generateMandelbrot(maxIterations, width, height)
+	png.Encode(w, img)
+}
+
+func animateGIF(w io.Writer) {
 	anim := gif.GIF{LoopCount: maxIterations}
 	animateMandelbrot(maxIterations, startingIteration, width, height, &anim)
-	gif.EncodeAll(os.Stdout, &anim)
+	gif.EncodeAll(w, &anim)
 }
 
 func animateMandelbrot(maxIterations, startingIteration uint8, width, height int, anim *gif.GIF) {
@@ -37,8 +49,8 @@ func animateMandelbrot(maxIterations, startingIteration uint8, width, height int
 	}
 }
 
-func generateMandelbrot(iterations uint8, width, height int) *image.RGBA {
-	img := image.NewRGBA(image.Rect(0, 0, width, height))
+func generateMandelbrot(iterations uint8, width, height int) *image.NRGBA {
+	img := image.NewNRGBA(image.Rect(0, 0, width, height))
 	for py := 0; py < height; py++ {
 		y := float64(py)/float64(height)*(ymax-ymin) + ymin
 		for px := 0; px < width; px++ {
@@ -54,7 +66,7 @@ func generateMandelbrot(iterations uint8, width, height int) *image.RGBA {
 	return img
 }
 
-func rgbaToPalleted(rgba *image.RGBA) *image.Paletted {
+func rgbaToPalleted(rgba image.Image) *image.Paletted {
 	bounds := rgba.Bounds()
 	palettedImage := image.NewPaletted(bounds, nil)
 	quantizer := gogif.MedianCutQuantizer{NumColor: 64}
@@ -91,8 +103,9 @@ func escapeIteration(z complex128, mi uint8) (i uint8, escaped bool, zFinal comp
 }
 
 func smoothHSV(tries, maxTries uint8, zFinal complex128) HSVA {
-	hue := math.Abs((float64(tries) / float64(maxTries)) * 360)
-	log.Println("Hue : ", hue)
+	s := smooth(float64(tries), zFinal)
+	hue := math.Abs((float64(s) / float64(maxTries)) * 360)
+	log.Println("Hue : ", hue, "S: ", s, "z: ", zFinal)
 
 	return HSVA{
 		H: hue,
@@ -100,4 +113,8 @@ func smoothHSV(tries, maxTries uint8, zFinal complex128) HSVA {
 		V: 1.0,
 		A: 1.0,
 	}
+}
+
+func smooth(iteration float64, zFinal complex128) float64 {
+	return (iteration + 1) - (math.Log(math.Log(cmplx.Abs(zFinal))/math.Log(2)) / math.Log(2))
 }
