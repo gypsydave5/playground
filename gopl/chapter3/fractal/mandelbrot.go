@@ -14,48 +14,46 @@ import (
 	"github.com/andybons/gogif"
 )
 
-const (
-	xmin, ymin, xmax, ymax = -2, -2, +2, +2
-	width, height          = 8192, 8192
-	maxIterations          = 40
-	startingIteration      = 39
-	contrast               = 15
-	delay                  = 20
-)
+// MandelbrotParameters supplies parameters for the generation of a Mandelbrot
+// image
+type MandelbrotParameters struct {
+	Xmin, Ymin, Xmax, Ymax, Width, Height, Contrast, Delay int
+	Iterations, StartingIteration                          uint8
+}
 
 // WritePNG writes the Mandelbrot image to an io.Writer, encoded as a PNG
-func WritePNG(w io.Writer) {
-	img := generateMandelbrot(maxIterations, width, height)
+func WritePNG(w io.Writer, p MandelbrotParameters) {
+	img := generateMandelbrot(p.Iterations, p)
 	png.Encode(w, img)
 }
 
 // WriteAnimatedGIF writes an animation of the Mandelbrot fractal, increasing
 // the number of iterations per frame
-func WriteAnimatedGIF(w io.Writer) {
-	anim := gif.GIF{LoopCount: maxIterations}
-	animateMandelbrot(maxIterations, startingIteration, width, height, &anim)
+func WriteAnimatedGIF(w io.Writer, p MandelbrotParameters) {
+	anim := gif.GIF{LoopCount: int(p.Iterations)}
+	animateMandelbrot(&anim, p)
 	gif.EncodeAll(w, &anim)
 }
 
-func animateMandelbrot(maxIterations, startingIteration uint8, width, height int, anim *gif.GIF) {
-	for i := uint8(startingIteration); i < maxIterations; i++ {
-		img := generateMandelbrot(i, width, height)
+func animateMandelbrot(anim *gif.GIF, p MandelbrotParameters) {
+	for i := p.StartingIteration; i < p.Iterations; i++ {
+		img := generateMandelbrot(i, p)
 		palettedImage := rgbaToPalleted(img)
-		anim.Delay = append(anim.Delay, delay)
+		anim.Delay = append(anim.Delay, p.Delay)
 		anim.Image = append(anim.Image, palettedImage)
 	}
 }
 
-func generateMandelbrot(iterations uint8, width, height int) *image.NRGBA {
-	img := image.NewNRGBA(image.Rect(0, 0, width, height))
-	for py := 0; py < height; py++ {
-		y := float64(py)/float64(height)*(ymax-ymin) + ymin
-		for px := 0; px < width; px++ {
-			x := float64(px)/float64(width)*(xmax-xmin) + xmin
+func generateMandelbrot(iterations uint8, p MandelbrotParameters) *image.NRGBA {
+	img := image.NewNRGBA(image.Rect(0, 0, p.Width, p.Height))
+	for py := 0; py < p.Height; py++ {
+		y := float64(py)/float64(p.Height)*float64(p.Ymax-p.Ymin) + float64(p.Ymin)
+		for px := 0; px < p.Width; px++ {
+			x := float64(px)/float64(p.Width)*float64(p.Xmax-p.Xmin) + float64(p.Xmin)
 			z := complex(x, y)
 
 			tries, escaped, zFinal := escapeIteration(z, iterations)
-			shade := colorShade(tries, iterations, escaped, contrast, zFinal)
+			shade := colorShade(tries, iterations, escaped, p.Contrast, zFinal)
 			img.Set(px, py, shade)
 		}
 	}
