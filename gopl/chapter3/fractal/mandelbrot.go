@@ -1,5 +1,5 @@
-// Mandelbrot emits an animated GIF of the Mandelbrot fractal.
-package main
+// Package fractal emits an animated GIF of the Mandelbrot fractal.
+package fractal
 
 import (
 	"image"
@@ -10,31 +10,28 @@ import (
 	"log"
 	"math"
 	"math/cmplx"
-	"os"
 
 	"github.com/andybons/gogif"
 )
 
 const (
 	xmin, ymin, xmax, ymax = -2, -2, +2, +2
-	width, height          = 1024, 1024
+	width, height          = 8192, 8192
 	maxIterations          = 40
 	startingIteration      = 39
 	contrast               = 15
 	delay                  = 20
 )
 
-func main() {
-	//animateGIF(os.Stdout)
-	makePNG(os.Stdout)
-}
-
-func makePNG(w io.Writer) {
+// WritePNG writes the Mandelbrot image to an io.Writer, encoded as a PNG
+func WritePNG(w io.Writer) {
 	img := generateMandelbrot(maxIterations, width, height)
 	png.Encode(w, img)
 }
 
-func animateGIF(w io.Writer) {
+// WriteAnimatedGIF writes an animation of the Mandelbrot fractal, increasing
+// the number of iterations per frame
+func WriteAnimatedGIF(w io.Writer) {
 	anim := gif.GIF{LoopCount: maxIterations}
 	animateMandelbrot(maxIterations, startingIteration, width, height, &anim)
 	gif.EncodeAll(w, &anim)
@@ -58,7 +55,6 @@ func generateMandelbrot(iterations uint8, width, height int) *image.NRGBA {
 			z := complex(x, y)
 
 			tries, escaped, zFinal := escapeIteration(z, iterations)
-
 			shade := colorShade(tries, iterations, escaped, contrast, zFinal)
 			img.Set(px, py, shade)
 		}
@@ -74,7 +70,7 @@ func rgbaToPalleted(rgba image.Image) *image.Paletted {
 	return palettedImage
 }
 
-func greyShade(tries uint8, escaped bool, contrast int, zFinal complex128) color.Color {
+func greyShade(tries, maxTries uint8, escaped bool, contrast int, zFinal complex128) color.Color {
 	if !escaped {
 		return color.Black
 	}

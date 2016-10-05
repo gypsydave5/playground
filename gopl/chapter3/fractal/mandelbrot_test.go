@@ -1,7 +1,6 @@
-package main
+package fractal
 
 import (
-	"fmt"
 	"math/rand"
 	"reflect"
 	"testing"
@@ -31,7 +30,6 @@ func TestEscapeIterationZeroNeverEscapes(t *testing.T) {
 func TestEscapeIterationNegativeRealNeverEscapes(t *testing.T) {
 	f := func(iterations uint8, real neg2ToZeroPt25) bool {
 
-		fmt.Println(real)
 		num := complex(real, 0)
 		_, escaped, _ := escapeIteration(num, iterations)
 		return !escaped
