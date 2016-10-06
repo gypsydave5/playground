@@ -14,15 +14,19 @@ import (
 	"github.com/andybons/gogif"
 )
 
+var loggingEnabled bool
+
 // MandelbrotParameters supplies parameters for the generation of a Mandelbrot
 // image
 type MandelbrotParameters struct {
 	Xmin, Ymin, Xmax, Ymax, Width, Height, Contrast, Delay int
 	Iterations, StartingIteration                          uint8
+	Logging                                                bool
 }
 
 // WritePNG writes the Mandelbrot image to an io.Writer, encoded as a PNG
 func WritePNG(w io.Writer, p MandelbrotParameters) {
+	loggingEnabled = p.Logging
 	img := generateMandelbrot(p.Iterations, p)
 	png.Encode(w, img)
 }
@@ -30,6 +34,7 @@ func WritePNG(w io.Writer, p MandelbrotParameters) {
 // WriteAnimatedGIF writes an animation of the Mandelbrot fractal, increasing
 // the number of iterations per frame
 func WriteAnimatedGIF(w io.Writer, p MandelbrotParameters) {
+	loggingEnabled = p.Logging
 	anim := gif.GIF{LoopCount: int(p.Iterations)}
 	animateMandelbrot(&anim, p)
 	gif.EncodeAll(w, &anim)
@@ -99,7 +104,9 @@ func escapeIteration(z complex128, mi uint8) (i uint8, escaped bool, zFinal comp
 func smoothHSV(tries, maxTries uint8, zFinal complex128) HSVA {
 	s := smooth(float64(tries), zFinal)
 	hue := math.Abs((float64(s) / float64(maxTries)) * 360)
-	log.Println("Hue : ", hue, "S: ", s, "z: ", zFinal)
+	if loggingEnabled {
+		log.Println("Hue : ", hue, "S: ", s, "z: ", zFinal)
+	}
 
 	return HSVA{
 		H: hue,
