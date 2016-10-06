@@ -54,18 +54,44 @@ func animateMandelbrot(anim *gif.GIF, params MandelbrotParameters) {
 func generateMandelbrot(iterations uint8, params MandelbrotParameters) *image.NRGBA {
 	img := image.NewNRGBA(image.Rect(0, 0, params.Width, params.Height))
 	for py := 0; py < params.Height; py++ {
-
-		y := float64(py)/float64(params.Height)*float64(params.Ymax-params.Ymin) + float64(params.Ymin)
 		for px := 0; px < params.Width; px++ {
-
-			x := float64(px)/float64(params.Width)*float64(params.Xmax-params.Xmin) + float64(params.Xmin)
-			z := complex(x, y)
 
 			var shade color.Color
 			if params.Colour == true {
-				tries, escaped, zFinal := escapeIteration(z, iterations)
-				shade = colorShade(tries, iterations, escaped, params.Contrast, zFinal)
+				y1 := float64(py)/float64(params.Height)*float64(params.Ymax-params.Ymin) + float64(params.Ymin)
+				y2 := (float64(py)+0.5)/float64(params.Height)*float64(params.Ymax-params.Ymin) + float64(params.Ymin)
+				x1 := float64(px)/float64(params.Width)*float64(params.Xmax-params.Xmin) + float64(params.Xmin)
+				x2 := (float64(px)+0.5)/float64(params.Width)*float64(params.Xmax-params.Xmin) + float64(params.Xmin)
+				z1 := complex(x1, y1)
+				z2 := complex(x1, y2)
+				z3 := complex(x2, y1)
+				z4 := complex(x2, y2)
+
+				t1, e1, zf1 := escapeIteration(z1, iterations)
+				t2, e2, zf2 := escapeIteration(z2, iterations)
+				t3, e3, zf3 := escapeIteration(z3, iterations)
+				t4, e4, zf4 := escapeIteration(z4, iterations)
+
+				shade1 := colorShade(t1, iterations, e1, params.Contrast, zf1)
+				shade2 := colorShade(t2, iterations, e2, params.Contrast, zf2)
+				shade3 := colorShade(t3, iterations, e3, params.Contrast, zf3)
+				shade4 := colorShade(t4, iterations, e4, params.Contrast, zf4)
+
+				r1, g1, b1, a1 := shade1.RGBA()
+				r2, g2, b2, a2 := shade2.RGBA()
+				r3, g3, b3, a3 := shade3.RGBA()
+				r4, g4, b4, a4 := shade4.RGBA()
+
+				shade = color.RGBA64{
+					uint16((r1 + r2 + r3 + r4) / 4),
+					uint16((b1 + b2 + b3 + b4) / 4),
+					uint16((g1 + g2 + g3 + g4) / 4),
+					uint16((a1 + a2 + a3 + a4) / 4),
+				}
 			} else {
+				y := float64(py)/float64(params.Height)*float64(params.Ymax-params.Ymin) + float64(params.Ymin)
+				x := float64(px)/float64(params.Width)*float64(params.Xmax-params.Xmin) + float64(params.Xmin)
+				z := complex(x, y)
 				tries, escaped, zFinal := escapeIteration(z, iterations)
 				shade = greyShade(tries, iterations, escaped, params.Contrast, zFinal)
 			}
