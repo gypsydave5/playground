@@ -7,13 +7,12 @@ import (
 	"github.com/gypsydave5/playground/gopl/chapter3/fractal"
 )
 
-var bounds int
-var width int
-var height int
-var iterations uint
-var startingIteration uint
-var format string
-var logging bool
+var (
+	bounds, width, height         int
+	iterations, startingIteration uint
+	format                        string
+	logging, colour               bool
+)
 
 func init() {
 	flag.IntVar(&bounds, "bounds", 2, "max and min for x and y axes")
@@ -23,6 +22,7 @@ func init() {
 	flag.UintVar(&startingIteration, "startingIteration", 0, "animated only - iterations to start from")
 	flag.StringVar(&format, "format", "png", "output format - defaults to png. Set to 'gif' for animated gif")
 	flag.BoolVar(&logging, "verbose", false, "output log messages to stderr")
+	flag.BoolVar(&colour, "colour", true, "output in colour or greyscale. Defaults to colour")
 }
 
 func main() {
@@ -39,6 +39,7 @@ func main() {
 		Contrast:          15,
 		Delay:             20,
 		Logging:           logging,
+		Colour:            colour,
 	}
 
 	fractal.WritePNG(os.Stdout, params)

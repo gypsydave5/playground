@@ -1,4 +1,5 @@
-// Package fractal emits an animated GIF of the Mandelbrot fractal.
+// Package fractal presents functions to write fractal images to various image filetypes.
+// It currently supports images in the Mandelbrot set as both PNG images and animated GIFs
 package fractal
 
 import (
@@ -21,44 +22,53 @@ var loggingEnabled bool
 type MandelbrotParameters struct {
 	Xmin, Ymin, Xmax, Ymax, Width, Height, Contrast, Delay int
 	Iterations, StartingIteration                          uint8
-	Logging                                                bool
+	Logging, Colour                                        bool
 }
 
-// WritePNG writes the Mandelbrot image to an io.Writer, encoded as a PNG
-func WritePNG(w io.Writer, p MandelbrotParameters) {
-	loggingEnabled = p.Logging
-	img := generateMandelbrot(p.Iterations, p)
+// WritePNG writes the Mandelbrot image to a provided io.Writer, encoded as a PNG,
+// using the supplied MandelbrotParameters for configuration
+func WritePNG(w io.Writer, params MandelbrotParameters) {
+	loggingEnabled = params.Logging
+	img := generateMandelbrot(params.Iterations, params)
 	png.Encode(w, img)
 }
 
 // WriteAnimatedGIF writes an animation of the Mandelbrot fractal, increasing
 // the number of iterations per frame
-func WriteAnimatedGIF(w io.Writer, p MandelbrotParameters) {
-	loggingEnabled = p.Logging
-	anim := gif.GIF{LoopCount: int(p.Iterations)}
-	animateMandelbrot(&anim, p)
+func WriteAnimatedGIF(w io.Writer, params MandelbrotParameters) {
+	loggingEnabled = params.Logging
+	anim := gif.GIF{LoopCount: int(params.Iterations)}
+	animateMandelbrot(&anim, params)
 	gif.EncodeAll(w, &anim)
 }
 
-func animateMandelbrot(anim *gif.GIF, p MandelbrotParameters) {
-	for i := p.StartingIteration; i < p.Iterations; i++ {
-		img := generateMandelbrot(i, p)
+func animateMandelbrot(anim *gif.GIF, params MandelbrotParameters) {
+	for i := params.StartingIteration; i < params.Iterations; i++ {
+		img := generateMandelbrot(i, params)
 		palettedImage := rgbaToPalleted(img)
-		anim.Delay = append(anim.Delay, p.Delay)
+		anim.Delay = append(anim.Delay, params.Delay)
 		anim.Image = append(anim.Image, palettedImage)
 	}
 }
 
-func generateMandelbrot(iterations uint8, p MandelbrotParameters) *image.NRGBA {
-	img := image.NewNRGBA(image.Rect(0, 0, p.Width, p.Height))
-	for py := 0; py < p.Height; py++ {
-		y := float64(py)/float64(p.Height)*float64(p.Ymax-p.Ymin) + float64(p.Ymin)
-		for px := 0; px < p.Width; px++ {
-			x := float64(px)/float64(p.Width)*float64(p.Xmax-p.Xmin) + float64(p.Xmin)
+func generateMandelbrot(iterations uint8, params MandelbrotParameters) *image.NRGBA {
+	img := image.NewNRGBA(image.Rect(0, 0, params.Width, params.Height))
+	for py := 0; py < params.Height; py++ {
+
+		y := float64(py)/float64(params.Height)*float64(params.Ymax-params.Ymin) + float64(params.Ymin)
+		for px := 0; px < params.Width; px++ {
+
+			x := float64(px)/float64(params.Width)*float64(params.Xmax-params.Xmin) + float64(params.Xmin)
 			z := complex(x, y)
 
-			tries, escaped, zFinal := escapeIteration(z, iterations)
-			shade := colorShade(tries, iterations, escaped, p.Contrast, zFinal)
+			var shade color.Color
+			if params.Colour == true {
+				tries, escaped, zFinal := escapeIteration(z, iterations)
+				shade = colorShade(tries, iterations, escaped, params.Contrast, zFinal)
+			} else {
+				tries, escaped, zFinal := escapeIteration(z, iterations)
+				shade = greyShade(tries, iterations, escaped, params.Contrast, zFinal)
+			}
 			img.Set(px, py, shade)
 		}
 	}
