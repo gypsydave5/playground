@@ -72,28 +72,28 @@ func generateMandelbrot(iterations uint8, params MandelbrotParameters) *image.NR
 
 func superSample(iterations uint8, px, py int, params MandelbrotParameters, sh shader) color.Color {
 	const smoothing = 0.5
-	y1 := float64(py)/float64(params.Height)*float64(params.Ymax-params.Ymin) + float64(params.Ymin)
-	y2 := (float64(py)+smoothing)/float64(params.Height)*float64(params.Ymax-params.Ymin) + float64(params.Ymin)
+	x1, x2 := calcXs(px, smoothing, params)
+	y1, y2 := calcYs(py, smoothing, params)
 
-	x1 := float64(px)/float64(params.Width)*float64(params.Xmax-params.Xmin) + float64(params.Xmin)
-	x2 := (float64(px)+smoothing)/float64(params.Width)*float64(params.Xmax-params.Xmin) + float64(params.Xmin)
+	zs := []complex128{complex(x1, y1), complex(x1, y2), complex(x2, y1), complex(x2, y2)}
+	var colors []color.Color
 
-	z1 := complex(x1, y1)
-	z2 := complex(x1, y2)
-	z3 := complex(x2, y1)
-	z4 := complex(x2, y2)
+	for _, z := range zs {
+		t, e, zf := escapeIteration(z, iterations)
+		colors = append(colors, sh(t, iterations, e, params.Contrast, zf))
+	}
 
-	t1, e1, zf1 := escapeIteration(z1, iterations)
-	t2, e2, zf2 := escapeIteration(z2, iterations)
-	t3, e3, zf3 := escapeIteration(z3, iterations)
-	t4, e4, zf4 := escapeIteration(z4, iterations)
+	return averageColor(colors...)
+}
 
-	shade1 := sh(t1, iterations, e1, params.Contrast, zf1)
-	shade2 := sh(t2, iterations, e2, params.Contrast, zf2)
-	shade3 := sh(t3, iterations, e3, params.Contrast, zf3)
-	shade4 := sh(t4, iterations, e4, params.Contrast, zf4)
+func calcXs(px int, smoothing float64, params MandelbrotParameters) (float64, float64) {
+	adjustedWidth := float64(params.Width) * float64(params.Xmax-params.Xmin)
+	return float64(px)/adjustedWidth + float64(params.Xmin), (float64(px)+smoothing)/adjustedWidth + float64(params.Xmin)
+}
 
-	return averageColor(shade1, shade2, shade3, shade4)
+func calcYs(py int, smoothing float64, params MandelbrotParameters) (float64, float64) {
+	adjustedLength := float64(params.Height) * float64(params.Ymax-params.Ymin)
+	return float64(py)/adjustedLength + float64(params.Ymin), (float64(py)+smoothing)/adjustedLength + float64(params.Ymin)
 }
 
 func averageColor(colors ...color.Color) color.Color {
