@@ -71,10 +71,13 @@ func generateMandelbrot(iterations uint8, params MandelbrotParameters) *image.NR
 }
 
 func superSample(iterations uint8, px, py int, params MandelbrotParameters, sh shader) color.Color {
+	const smoothing = 0.5
 	y1 := float64(py)/float64(params.Height)*float64(params.Ymax-params.Ymin) + float64(params.Ymin)
-	y2 := (float64(py)+0.5)/float64(params.Height)*float64(params.Ymax-params.Ymin) + float64(params.Ymin)
+	y2 := (float64(py)+smoothing)/float64(params.Height)*float64(params.Ymax-params.Ymin) + float64(params.Ymin)
+
 	x1 := float64(px)/float64(params.Width)*float64(params.Xmax-params.Xmin) + float64(params.Xmin)
-	x2 := (float64(px)+0.5)/float64(params.Width)*float64(params.Xmax-params.Xmin) + float64(params.Xmin)
+	x2 := (float64(px)+smoothing)/float64(params.Width)*float64(params.Xmax-params.Xmin) + float64(params.Xmin)
+
 	z1 := complex(x1, y1)
 	z2 := complex(x1, y2)
 	z3 := complex(x2, y1)
@@ -90,16 +93,24 @@ func superSample(iterations uint8, px, py int, params MandelbrotParameters, sh s
 	shade3 := sh(t3, iterations, e3, params.Contrast, zf3)
 	shade4 := sh(t4, iterations, e4, params.Contrast, zf4)
 
-	r1, g1, b1, a1 := shade1.RGBA()
-	r2, g2, b2, a2 := shade2.RGBA()
-	r3, g3, b3, a3 := shade3.RGBA()
-	r4, g4, b4, a4 := shade4.RGBA()
+	return averageColor(shade1, shade2, shade3, shade4)
+}
 
+func averageColor(colors ...color.Color) color.Color {
+	length := float64(len(colors))
+	var r, g, b, a float64
+	for _, color := range colors {
+		rc, gc, bc, ac := color.RGBA()
+		r += float64(rc)
+		g += float64(gc)
+		b += float64(bc)
+		a += float64(ac)
+	}
 	return color.RGBA64{
-		uint16((r1 + r2 + r3 + r4) / 4),
-		uint16((b1 + b2 + b3 + b4) / 4),
-		uint16((g1 + g2 + g3 + g4) / 4),
-		uint16((a1 + a2 + a3 + a4) / 4),
+		uint16(r / length),
+		uint16(g / length),
+		uint16(b / length),
+		uint16(a / length),
 	}
 }
 
