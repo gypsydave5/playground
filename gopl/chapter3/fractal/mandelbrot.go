@@ -42,6 +42,8 @@ func WriteAnimatedGIF(w io.Writer, params MandelbrotParameters) {
 	gif.EncodeAll(w, &anim)
 }
 
+type shader func(tries, maxTries uint8, escaped bool, contrast int, zFinal complex128) color.Color
+
 func animateMandelbrot(anim *gif.GIF, params MandelbrotParameters) {
 	for i := params.StartingIteration; i < params.Iterations; i++ {
 		img := generateMandelbrot(i, params)
@@ -58,47 +60,47 @@ func generateMandelbrot(iterations uint8, params MandelbrotParameters) *image.NR
 
 			var shade color.Color
 			if params.Colour == true {
-				y1 := float64(py)/float64(params.Height)*float64(params.Ymax-params.Ymin) + float64(params.Ymin)
-				y2 := (float64(py)+0.5)/float64(params.Height)*float64(params.Ymax-params.Ymin) + float64(params.Ymin)
-				x1 := float64(px)/float64(params.Width)*float64(params.Xmax-params.Xmin) + float64(params.Xmin)
-				x2 := (float64(px)+0.5)/float64(params.Width)*float64(params.Xmax-params.Xmin) + float64(params.Xmin)
-				z1 := complex(x1, y1)
-				z2 := complex(x1, y2)
-				z3 := complex(x2, y1)
-				z4 := complex(x2, y2)
-
-				t1, e1, zf1 := escapeIteration(z1, iterations)
-				t2, e2, zf2 := escapeIteration(z2, iterations)
-				t3, e3, zf3 := escapeIteration(z3, iterations)
-				t4, e4, zf4 := escapeIteration(z4, iterations)
-
-				shade1 := colorShade(t1, iterations, e1, params.Contrast, zf1)
-				shade2 := colorShade(t2, iterations, e2, params.Contrast, zf2)
-				shade3 := colorShade(t3, iterations, e3, params.Contrast, zf3)
-				shade4 := colorShade(t4, iterations, e4, params.Contrast, zf4)
-
-				r1, g1, b1, a1 := shade1.RGBA()
-				r2, g2, b2, a2 := shade2.RGBA()
-				r3, g3, b3, a3 := shade3.RGBA()
-				r4, g4, b4, a4 := shade4.RGBA()
-
-				shade = color.RGBA64{
-					uint16((r1 + r2 + r3 + r4) / 4),
-					uint16((b1 + b2 + b3 + b4) / 4),
-					uint16((g1 + g2 + g3 + g4) / 4),
-					uint16((a1 + a2 + a3 + a4) / 4),
-				}
+				shade = superSample(iterations, px, py, params, colorShade)
 			} else {
-				y := float64(py)/float64(params.Height)*float64(params.Ymax-params.Ymin) + float64(params.Ymin)
-				x := float64(px)/float64(params.Width)*float64(params.Xmax-params.Xmin) + float64(params.Xmin)
-				z := complex(x, y)
-				tries, escaped, zFinal := escapeIteration(z, iterations)
-				shade = greyShade(tries, iterations, escaped, params.Contrast, zFinal)
+				shade = superSample(iterations, px, py, params, greyShade)
 			}
 			img.Set(px, py, shade)
 		}
 	}
 	return img
+}
+
+func superSample(iterations uint8, px, py int, params MandelbrotParameters, sh shader) color.Color {
+	y1 := float64(py)/float64(params.Height)*float64(params.Ymax-params.Ymin) + float64(params.Ymin)
+	y2 := (float64(py)+0.5)/float64(params.Height)*float64(params.Ymax-params.Ymin) + float64(params.Ymin)
+	x1 := float64(px)/float64(params.Width)*float64(params.Xmax-params.Xmin) + float64(params.Xmin)
+	x2 := (float64(px)+0.5)/float64(params.Width)*float64(params.Xmax-params.Xmin) + float64(params.Xmin)
+	z1 := complex(x1, y1)
+	z2 := complex(x1, y2)
+	z3 := complex(x2, y1)
+	z4 := complex(x2, y2)
+
+	t1, e1, zf1 := escapeIteration(z1, iterations)
+	t2, e2, zf2 := escapeIteration(z2, iterations)
+	t3, e3, zf3 := escapeIteration(z3, iterations)
+	t4, e4, zf4 := escapeIteration(z4, iterations)
+
+	shade1 := sh(t1, iterations, e1, params.Contrast, zf1)
+	shade2 := sh(t2, iterations, e2, params.Contrast, zf2)
+	shade3 := sh(t3, iterations, e3, params.Contrast, zf3)
+	shade4 := sh(t4, iterations, e4, params.Contrast, zf4)
+
+	r1, g1, b1, a1 := shade1.RGBA()
+	r2, g2, b2, a2 := shade2.RGBA()
+	r3, g3, b3, a3 := shade3.RGBA()
+	r4, g4, b4, a4 := shade4.RGBA()
+
+	return color.RGBA64{
+		uint16((r1 + r2 + r3 + r4) / 4),
+		uint16((b1 + b2 + b3 + b4) / 4),
+		uint16((g1 + g2 + g3 + g4) / 4),
+		uint16((a1 + a2 + a3 + a4) / 4),
+	}
 }
 
 func rgbaToPalleted(rgba image.Image) *image.Paletted {
@@ -114,7 +116,7 @@ func greyShade(tries, maxTries uint8, escaped bool, contrast int, zFinal complex
 		return color.Black
 	}
 
-	return color.Gray{255 - uint8(contrast)*tries}
+	return smoothGrey(tries, maxTries, zFinal)
 }
 
 func colorShade(tries, maxTries uint8, escaped bool, contrast int, zFinal complex128) color.Color {
@@ -137,7 +139,13 @@ func escapeIteration(z complex128, mi uint8) (i uint8, escaped bool, zFinal comp
 	return i, false, v
 }
 
-func smoothHSV(tries, maxTries uint8, zFinal complex128) HSVA {
+func smoothGrey(tries, maxTries uint8, zFinal complex128) color.Color {
+	s := smooth(float64(tries), zFinal)
+	shade := math.Abs((float64(s) / float64(maxTries)) * 255)
+	return color.Gray{uint8(shade)}
+}
+
+func smoothHSV(tries, maxTries uint8, zFinal complex128) color.Color {
 	s := smooth(float64(tries), zFinal)
 	hue := math.Abs((float64(s) / float64(maxTries)) * 360)
 	if loggingEnabled {
