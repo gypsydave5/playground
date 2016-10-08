@@ -72,8 +72,8 @@ func generateMandelbrot(iterations uint8, params MandelbrotParameters) *image.NR
 
 func superSample(iterations uint8, px, py int, params MandelbrotParameters, sh shader) color.Color {
 	const smoothing = 0.5
-	x1, x2 := calcXs(px, smoothing, params)
-	y1, y2 := calcYs(py, smoothing, params)
+	x1, x2 := generateXs(params, px, smoothing)
+	y1, y2 := generateYs(params, py, smoothing)
 
 	zs := []complex128{complex(x1, y1), complex(x1, y2), complex(x2, y1), complex(x2, y2)}
 	var colors []color.Color
@@ -86,14 +86,16 @@ func superSample(iterations uint8, px, py int, params MandelbrotParameters, sh s
 	return averageColor(colors...)
 }
 
-func calcXs(px int, smoothing float64, params MandelbrotParameters) (float64, float64) {
-	adjustedWidth := float64(params.Width) * float64(params.Xmax-params.Xmin)
-	return float64(px)/adjustedWidth + float64(params.Xmin), (float64(px)+smoothing)/adjustedWidth + float64(params.Xmin)
+func generateXs(params MandelbrotParameters, px int, smoothing float64) (float64, float64) {
+	x1 := float64(px)/float64(params.Width)*float64(params.Xmax-params.Xmin) + float64(params.Xmin)
+	x2 := (float64(px)+smoothing)/float64(params.Width)*float64(params.Xmax-params.Xmin) + float64(params.Xmin)
+	return x1, x2
 }
 
-func calcYs(py int, smoothing float64, params MandelbrotParameters) (float64, float64) {
-	adjustedLength := float64(params.Height) * float64(params.Ymax-params.Ymin)
-	return float64(py)/adjustedLength + float64(params.Ymin), (float64(py)+smoothing)/adjustedLength + float64(params.Ymin)
+func generateYs(params MandelbrotParameters, py int, smoothing float64) (float64, float64) {
+	y1 := float64(py)/float64(params.Height)*float64(params.Ymax-params.Ymin) + float64(params.Ymin)
+	y2 := (float64(py)+smoothing)/float64(params.Height)*float64(params.Ymax-params.Ymin) + float64(params.Ymin)
+	return y1, y2
 }
 
 func averageColor(colors ...color.Color) color.Color {
