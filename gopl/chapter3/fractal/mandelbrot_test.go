@@ -53,3 +53,24 @@ func TestAverageColor(t *testing.T) {
 		t.Error("Was expecting", expectedColor, "and yet we received", avgColor, ". How disappointing.")
 	}
 }
+
+func TestSuperSample(t *testing.T) {
+	vp := vpixel{1.0, 1.0}
+	params := MandelbrotParameters{}
+
+	colors := superSample(10, vp, params, alwaysWhiteShader)
+	expectedColors := []color.Color{
+		color.White,
+		color.White,
+		color.White,
+		color.White,
+	}
+
+	if !reflect.DeepEqual(colors, expectedColors) {
+		t.Error("Was expecting", expectedColors, "and yet we received", colors, ". How disappointing.")
+	}
+}
+
+func alwaysWhiteShader(tries, maxTries uint8, escaped bool, contrast int, zFinal complex128) color.Color {
+	return color.White
+}

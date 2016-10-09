@@ -25,6 +25,12 @@ type MandelbrotParameters struct {
 	Logging, Colour                                        bool
 }
 
+// vpixel is a virtual pixel in an image to make supersampling easier to achieve
+type vpixel struct {
+	X float64
+	Y float64
+}
+
 // WritePNG writes the Mandelbrot image to a provided io.Writer, encoded as a PNG,
 // using the supplied MandelbrotParameters for configuration
 func WritePNG(w io.Writer, params MandelbrotParameters) {
@@ -58,11 +64,15 @@ func generateMandelbrot(iterations uint8, params MandelbrotParameters) *image.NR
 	for py := 0; py < params.Height; py++ {
 		for px := 0; px < params.Width; px++ {
 
+			vp := vpixel{float64(px), float64(py)}
 			var shade color.Color
+
 			if params.Colour == true {
-				shade = superSample(iterations, px, py, params, colorShade)
+				colors := superSample(iterations, vp, params, colorShade)
+				shade = averageColor(colors...)
 			} else {
-				shade = superSample(iterations, px, py, params, greyShade)
+				colors := superSample(iterations, vp, params, greyShade)
+				shade = averageColor(colors...)
 			}
 			img.Set(px, py, shade)
 		}
@@ -70,10 +80,10 @@ func generateMandelbrot(iterations uint8, params MandelbrotParameters) *image.NR
 	return img
 }
 
-func superSample(iterations uint8, px, py int, params MandelbrotParameters, sh shader) color.Color {
+func superSample(iterations uint8, vp vpixel, params MandelbrotParameters, sh shader) []color.Color {
 	const smoothing = 0.5
-	x1, x2 := generateXs(params, px, smoothing)
-	y1, y2 := generateYs(params, py, smoothing)
+	x1, x2 := generateXs(params, vp.X, smoothing)
+	y1, y2 := generateYs(params, vp.Y, smoothing)
 
 	zs := []complex128{complex(x1, y1), complex(x1, y2), complex(x2, y1), complex(x2, y2)}
 	var colors []color.Color
@@ -83,16 +93,16 @@ func superSample(iterations uint8, px, py int, params MandelbrotParameters, sh s
 		colors = append(colors, sh(t, iterations, e, params.Contrast, zf))
 	}
 
-	return averageColor(colors...)
+	return colors
 }
 
-func generateXs(params MandelbrotParameters, px int, smoothing float64) (float64, float64) {
+func generateXs(params MandelbrotParameters, px float64, smoothing float64) (float64, float64) {
 	x1 := float64(px)/float64(params.Width)*float64(params.Xmax-params.Xmin) + float64(params.Xmin)
 	x2 := (float64(px)+smoothing)/float64(params.Width)*float64(params.Xmax-params.Xmin) + float64(params.Xmin)
 	return x1, x2
 }
 
-func generateYs(params MandelbrotParameters, py int, smoothing float64) (float64, float64) {
+func generateYs(params MandelbrotParameters, py float64, smoothing float64) (float64, float64) {
 	y1 := float64(py)/float64(params.Height)*float64(params.Ymax-params.Ymin) + float64(params.Ymin)
 	y2 := (float64(py)+smoothing)/float64(params.Height)*float64(params.Ymax-params.Ymin) + float64(params.Ymin)
 	return y1, y2
@@ -153,13 +163,13 @@ func escapeIteration(z complex128, mi uint8) (i uint8, escaped bool, zFinal comp
 }
 
 func smoothGrey(tries, maxTries uint8, zFinal complex128) color.Color {
-	s := smooth(float64(tries), zFinal)
+	s := mandelbrotSmooth(float64(tries), zFinal)
 	shade := math.Abs((float64(s) / float64(maxTries)) * 255)
 	return color.Gray{uint8(shade)}
 }
 
 func smoothHSV(tries, maxTries uint8, zFinal complex128) color.Color {
-	s := smooth(float64(tries), zFinal)
+	s := mandelbrotSmooth(float64(tries), zFinal)
 	hue := math.Abs((float64(s) / float64(maxTries)) * 360)
 	if loggingEnabled {
 		log.Println("Hue : ", hue, "S: ", s, "z: ", zFinal)
@@ -173,6 +183,6 @@ func smoothHSV(tries, maxTries uint8, zFinal complex128) color.Color {
 	}
 }
 
-func smooth(iteration float64, zFinal complex128) float64 {
+func mandelbrotSmooth(iteration float64, zFinal complex128) float64 {
 	return (iteration + 1) - (math.Log(math.Log(cmplx.Abs(zFinal))/math.Log(2)) / math.Log(2))
 }
