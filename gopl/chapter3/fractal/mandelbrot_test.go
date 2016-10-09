@@ -55,10 +55,17 @@ func TestAverageColor(t *testing.T) {
 }
 
 func TestSuperSample(t *testing.T) {
-	vp := vpixel{1.0, 1.0}
-	params := MandelbrotParameters{}
-
-	colors := superSample(10, vp, params, alwaysWhiteShader)
+	vp := vpixel{0.0, 0.0}
+	params := MandelbrotParameters{
+		Width:  200,
+		Height: 200,
+		Xmax:   100,
+		Xmin:   -100,
+		Ymax:   100,
+		Ymin:   -100,
+	}
+	pcFun := newMandelbrotPixelColorFunction(10, params, alwaysWhiteShader)
+	colors := superSample(vp, pcFun)
 	expectedColors := []color.Color{
 		color.White,
 		color.White,
@@ -87,6 +94,15 @@ func TestPixelToCoord(t *testing.T) {
 
 	if expected != gc {
 		t.Error("Was expecting", expected, "and yet we received", gc, ". How disappointing.")
+	}
+}
+
+func TestCoordToComplex(t *testing.T) {
+	gc := coord{1, 1}
+	z := coordToComplex(gc)
+
+	if z != complex(1, 1) {
+		t.Error("Expected", complex(1, 1), "but got", z)
 	}
 }
 
