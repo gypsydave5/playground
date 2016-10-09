@@ -71,6 +71,25 @@ func TestSuperSample(t *testing.T) {
 	}
 }
 
+func TestPixelToCoord(t *testing.T) {
+	vp := vpixel{100, 100}
+	params := MandelbrotParameters{
+		Width:  200,
+		Height: 200,
+		Xmax:   100,
+		Xmin:   -100,
+		Ymax:   100,
+		Ymin:   -100,
+	}
+
+	gc := pixelToCoord(vp, params)
+	expected := coord{0, 0}
+
+	if expected != gc {
+		t.Error("Was expecting", expected, "and yet we received", gc, ". How disappointing.")
+	}
+}
+
 func alwaysWhiteShader(tries, maxTries uint8, escaped bool, contrast int, zFinal complex128) color.Color {
 	return color.White
 }

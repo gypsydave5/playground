@@ -25,8 +25,8 @@ type MandelbrotParameters struct {
 	Logging, Colour                                        bool
 }
 
-// vpixel is a virtual pixel in an image to make supersampling easier to achieve
-type vpixel struct {
+type vpixel coord
+type coord struct {
 	X float64
 	Y float64
 }
@@ -94,6 +94,12 @@ func superSample(iterations uint8, vp vpixel, params MandelbrotParameters, sh sh
 	}
 
 	return colors
+}
+
+func pixelToCoord(vp vpixel, params MandelbrotParameters) coord {
+	x := float64(vp.X)/float64(params.Width)*float64(params.Xmax-params.Xmin) + float64(params.Xmin)
+	y := float64(vp.Y)/float64(params.Height)*float64(params.Ymax-params.Ymin) + float64(params.Ymin)
+	return coord{x, y}
 }
 
 func generateXs(params MandelbrotParameters, px float64, smoothing float64) (float64, float64) {
