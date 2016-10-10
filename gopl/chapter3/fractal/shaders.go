@@ -12,7 +12,6 @@ func greyShade(tries, maxTries uint8, escaped bool, contrast int, zFinal complex
 	if !escaped {
 		return color.Black
 	}
-
 	return smoothGrey(tries, maxTries, zFinal)
 }
 
@@ -20,7 +19,6 @@ func colorShade(tries, maxTries uint8, escaped bool, contrast int, zFinal comple
 	if !escaped {
 		return color.Black
 	}
-
 	return smoothHSV(tries, maxTries, zFinal)
 }
 

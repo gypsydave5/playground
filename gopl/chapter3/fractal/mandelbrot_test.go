@@ -54,25 +54,6 @@ func TestAverageColor(t *testing.T) {
 	}
 }
 
-func TestSuperSample(t *testing.T) {
-	vp := vpixel{0.0, 0.0}
-	params := MandelbrotParameters{
-		Width:  200,
-		Height: 200,
-		Xmax:   100,
-		Xmin:   -100,
-		Ymax:   100,
-		Ymin:   -100,
-	}
-	pcFun := newMandelbrotPixelColorFunction(10, params, alwaysWhiteShader)
-	c := superSample(vp, pcFun)
-	expectedColor := color.RGBA64{0xffff, 0xffff, 0xffff, 0xffff}
-
-	if !reflect.DeepEqual(c, expectedColor) {
-		t.Errorf("Was expecting %#v, and yet we received %#v. How disappointing.", expectedColor, c)
-	}
-}
-
 func TestPixelToCoord(t *testing.T) {
 	vp := vpixel{100, 100}
 	params := MandelbrotParameters{
@@ -101,6 +82,3 @@ func TestCoordToComplex(t *testing.T) {
 	}
 }
 
-func alwaysWhiteShader(tries, maxTries uint8, escaped bool, contrast int, zFinal complex128) color.Color {
-	return color.White
-}
