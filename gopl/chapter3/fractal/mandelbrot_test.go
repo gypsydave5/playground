@@ -65,16 +65,11 @@ func TestSuperSample(t *testing.T) {
 		Ymin:   -100,
 	}
 	pcFun := newMandelbrotPixelColorFunction(10, params, alwaysWhiteShader)
-	colors := superSample(vp, pcFun)
-	expectedColors := []color.Color{
-		color.White,
-		color.White,
-		color.White,
-		color.White,
-	}
+	c := superSample(vp, pcFun)
+	expectedColor := color.RGBA64{0xffff, 0xffff, 0xffff, 0xffff}
 
-	if !reflect.DeepEqual(colors, expectedColors) {
-		t.Error("Was expecting", expectedColors, "and yet we received", colors, ". How disappointing.")
+	if !reflect.DeepEqual(c, expectedColor) {
+		t.Errorf("Was expecting %#v, and yet we received %#v. How disappointing.", expectedColor, c)
 	}
 }
 

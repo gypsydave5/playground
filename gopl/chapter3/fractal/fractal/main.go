@@ -11,7 +11,7 @@ var (
 	bounds, width, height         int
 	iterations, startingIteration uint
 	format                        string
-	logging, colour               bool
+	logging, colour, supersample  bool
 )
 
 func init() {
@@ -22,7 +22,8 @@ func init() {
 	flag.UintVar(&startingIteration, "startingIteration", 0, "animated only - iterations to start from")
 	flag.StringVar(&format, "format", "png", "output format - defaults to png. Set to 'gif' for animated gif")
 	flag.BoolVar(&logging, "verbose", false, "output log messages to stderr")
-	flag.BoolVar(&colour, "colour", true, "output in colour or greyscale. Defaults to colour")
+	flag.BoolVar(&colour, "colour", true, "output in colour or greyscale.")
+	flag.BoolVar(&supersample, "ss", false, "turns supersampling per pixel on or off")
 }
 
 func main() {
@@ -40,6 +41,7 @@ func main() {
 		Delay:             20,
 		Logging:           logging,
 		Colour:            colour,
+		SuperSample:       supersample,
 	}
 
 	fractal.WritePNG(os.Stdout, params)
