@@ -56,7 +56,6 @@ func animateMandelbrot(anim *gif.GIF, params MandelbrotParameters) {
 
 func generateMandelbrot(iterations uint8, params MandelbrotParameters) *image.NRGBA {
 	var mdbFn pixelToColor
-
 	if params.Colour == true {
 		mdbFn = newMandelbrotPixelColorFunction(iterations, params, colorShade)
 	} else {
