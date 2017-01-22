@@ -18,9 +18,10 @@ var loggingEnabled bool
 // MandelbrotParameters supplies parameters for the generation of a Mandelbrot
 // image
 type MandelbrotParameters struct {
-	Xmin, Ymin, Xmax, Ymax, Width, Height, Contrast, Delay int
-	Iterations, StartingIteration                          uint8
-	Logging, Colour, SuperSample                           bool
+	Xmin, Ymin, Xmax, Ymax         float64
+	Width, Height, Contrast, Delay int
+	Iterations, StartingIteration  uint8
+	Logging, Colour, SuperSample   bool
 }
 
 type coord struct {
@@ -109,8 +110,8 @@ func escapeIteration(z complex128, mi uint8) (i uint8, escaped bool, zFinal comp
 }
 
 func pixelToCoord(vp vpixel, params MandelbrotParameters) coord {
-	x := float64(vp.X)/float64(params.Width)*float64(params.Xmax-params.Xmin) + float64(params.Xmin)
-	y := float64(vp.Y)/float64(params.Height)*float64(params.Ymax-params.Ymin) + float64(params.Ymin)
+	x := float64(vp.X)/float64(params.Width)*(params.Xmax-params.Xmin) + (params.Xmin)
+	y := float64(vp.Y)/float64(params.Height)*(params.Ymax-params.Ymin) + (params.Ymin)
 	return coord{x, y}
 }
 

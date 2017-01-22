@@ -8,14 +8,15 @@ import (
 )
 
 var (
-	bounds, width, height         int
+	bounds                        float64
+	width, height                 int
 	iterations, startingIteration uint
 	format                        string
 	logging, colour, supersample  bool
 )
 
 func init() {
-	flag.IntVar(&bounds, "bounds", 2, "max and min for x and y axes")
+	flag.Float64Var(&bounds, "bounds", 2, "max and min for x and y axes")
 	flag.IntVar(&width, "width", 256, "image width")
 	flag.IntVar(&height, "height", 256, "image height")
 	flag.UintVar(&iterations, "iterations", 40, "max iterations to perform to see if point escapes")
