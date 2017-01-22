@@ -56,7 +56,7 @@ func TestAverageColor(t *testing.T) {
 
 func TestPixelToCoord(t *testing.T) {
 	vp := vpixel{100, 100}
-	bounds := ImageBounds{
+	bounds := Bounds{
 		Xmax: 100,
 		Xmin: -100,
 		Ymax: 100,
@@ -83,5 +83,38 @@ func TestCoordToComplex(t *testing.T) {
 
 	if z != complex(1, 1) {
 		t.Error("Expected", complex(1, 1), "but got", z)
+	}
+}
+
+func TestCoordsZoomToBounds(t *testing.T) {
+	center := Coord{0, 0}
+	zoom := 1.0
+
+	var b = coordsZoomToBounds(center, zoom, 2)
+
+	expected := Bounds{-2, -2, 2, 2}
+
+	if b.Xmax != expected.Xmax {
+		t.Error("Expected", expected.Xmax, "but got", b.Xmax)
+	}
+	if b.Ymax != expected.Ymax {
+		t.Error("Expected", expected.Ymax, "but got", b.Ymax)
+	}
+}
+
+func TestCoordsZoomToBoundsMidCoordsAndZoomOneActsAsIdentity(t *testing.T) {
+	center := Coord{0, 0}
+	zoom := 1.0
+
+	f := func(defaultBound float64) bool {
+		var b = coordsZoomToBounds(center, zoom, defaultBound)
+		return (b.Xmax == defaultBound) &&
+			(b.Xmin == -defaultBound) &&
+			(b.Ymax == defaultBound) &&
+			(b.Ymin == -defaultBound)
+	}
+
+	if err := quick.Check(f, nil); err != nil {
+		t.Error("coordsZoomToBounds not performing as identity")
 	}
 }

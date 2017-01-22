@@ -18,15 +18,15 @@ var loggingEnabled bool
 // MandelbrotParameters supplies parameters for the generation of a Mandelbrot
 // image
 type MandelbrotParameters struct {
-	Bounds                         ImageBounds
+	Bounds                         Bounds
 	Width, Height, Contrast, Delay int
 	Iterations, StartingIteration  uint8
 	Logging, Colour, SuperSample   bool
 }
 
-// ImageBounds represents the maximum and minimum x and y Cartesian coordinates
+// Bounds represents the maximum and minimum x and y Cartesian coordinates
 // for a fractal image.
-type ImageBounds struct {
+type Bounds struct {
 	Xmin, Ymin, Xmax, Ymax float64
 }
 
@@ -34,6 +34,16 @@ type ImageBounds struct {
 type Coord struct {
 	X float64
 	Y float64
+}
+
+func coordsZoomToBounds(centre Coord, zoom float64, defaultBound float64) *Bounds {
+
+	return &Bounds{
+		Xmax: centre.X + (zoom * defaultBound),
+		Ymax: centre.Y + (zoom * defaultBound),
+		Xmin: centre.X - (zoom * defaultBound),
+		Ymin: centre.Y - (zoom * defaultBound),
+	}
 }
 
 // WritePNG writes the Mandelbrot image to a provided io.Writer, encoded as a PNG,

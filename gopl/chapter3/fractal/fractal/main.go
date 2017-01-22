@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	bounds                        float64
+	xcoord, ycoord, zoom          float64
 	width, height                 int
 	iterations, startingIteration uint
 	format                        string
@@ -16,7 +16,9 @@ var (
 )
 
 func init() {
-	flag.Float64Var(&bounds, "bounds", 2, "max and min for x and y axes")
+	flag.Float64Var(&xcoord, "x", 0, "x coordinate of the centre of the image")
+	flag.Float64Var(&ycoord, "y", 0, "y coordinate of the centre of the image")
+	flag.Float64Var(&zoom, "zoom", 0, "zoom factor")
 	flag.IntVar(&width, "width", 256, "image width")
 	flag.IntVar(&height, "height", 256, "image height")
 	flag.UintVar(&iterations, "iterations", 40, "max iterations to perform to see if point escapes")
@@ -30,11 +32,15 @@ func init() {
 func main() {
 	flag.Parse()
 
+	bounds := fractal.Bounds{
+		Xmin: -bounds,
+		Ymin: -bounds,
+		Xmax: bounds,
+		Ymax: bounds,
+	}
+
 	params := fractal.MandelbrotParameters{
-		Xmin:              -bounds,
-		Ymin:              -bounds,
-		Xmax:              bounds,
-		Ymax:              bounds,
+		Bounds:            bounds,
 		Width:             width,
 		Height:            height,
 		Iterations:        uint8(iterations),
