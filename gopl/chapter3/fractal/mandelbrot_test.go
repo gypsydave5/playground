@@ -56,17 +56,21 @@ func TestAverageColor(t *testing.T) {
 
 func TestPixelToCoord(t *testing.T) {
 	vp := vpixel{100, 100}
+	bounds := ImageBounds{
+		Xmax: 100,
+		Xmin: -100,
+		Ymax: 100,
+		Ymin: -100,
+	}
+
 	params := MandelbrotParameters{
+		Bounds: bounds,
 		Width:  200,
 		Height: 200,
-		Xmax:   100,
-		Xmin:   -100,
-		Ymax:   100,
-		Ymin:   -100,
 	}
 
 	gc := pixelToCoord(vp, params)
-	expected := coord{0, 0}
+	expected := Coord{0, 0}
 
 	if expected != gc {
 		t.Error("Was expecting", expected, "and yet we received", gc, ". How disappointing.")
@@ -74,11 +78,10 @@ func TestPixelToCoord(t *testing.T) {
 }
 
 func TestCoordToComplex(t *testing.T) {
-	gc := coord{1, 1}
+	gc := Coord{1, 1}
 	z := coordToComplex(gc)
 
 	if z != complex(1, 1) {
 		t.Error("Expected", complex(1, 1), "but got", z)
 	}
 }
-
