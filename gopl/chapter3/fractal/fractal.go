@@ -15,9 +15,9 @@ import (
 
 var loggingEnabled bool
 
-// MandelbrotParameters supplies parameters for the generation of a Mandelbrot
+// Parameters supplies parameters for the generation of a Mandelbrot
 // image
-type MandelbrotParameters struct {
+type Parameters struct {
 	Bounds                         Bounds
 	Width, Height, Contrast, Delay int
 	Iterations, StartingIteration  uint8
@@ -48,8 +48,8 @@ func CoordsZoomToBounds(centre Coord, zoom float64, defaultBound float64) *Bound
 }
 
 // WritePNG writes the Mandelbrot image to a provided io.Writer, encoded as a PNG,
-// using the supplied MandelbrotParameters for configuration
-func WritePNG(w io.Writer, p MandelbrotParameters) {
+// using the supplied Parameters for configuration
+func WritePNG(w io.Writer, p Parameters) {
 	loggingEnabled = p.Logging
 	img := generateMandelbrot(p.Iterations, p)
 	png.Encode(w, img)
@@ -57,14 +57,14 @@ func WritePNG(w io.Writer, p MandelbrotParameters) {
 
 // WriteAnimatedGIF writes an animation of the Mandelbrot fractal, increasing
 // the number of iterations per frame
-func WriteAnimatedGIF(w io.Writer, p MandelbrotParameters) {
+func WriteAnimatedGIF(w io.Writer, p Parameters) {
 	loggingEnabled = p.Logging
 	anim := gif.GIF{LoopCount: int(p.Iterations)}
 	animateMandelbrot(&anim, p)
 	gif.EncodeAll(w, &anim)
 }
 
-func animateMandelbrot(anim *gif.GIF, p MandelbrotParameters) {
+func animateMandelbrot(anim *gif.GIF, p Parameters) {
 	for i := p.StartingIteration; i < p.Iterations; i++ {
 		img := generateMandelbrot(i, p)
 		palettedImage := rgbaToPalleted(img)
@@ -73,7 +73,7 @@ func animateMandelbrot(anim *gif.GIF, p MandelbrotParameters) {
 	}
 }
 
-func generateMandelbrot(iterations uint8, p MandelbrotParameters) *image.NRGBA {
+func generateMandelbrot(iterations uint8, p Parameters) *image.NRGBA {
 	var mdbFn pixelToColor
 
 	if p.Colour == true {
@@ -100,7 +100,7 @@ func generateMandelbrot(iterations uint8, p MandelbrotParameters) *image.NRGBA {
 	return img
 }
 
-func newMandelbrotPixelColorFunction(iterations uint8, p MandelbrotParameters, sh shader) pixelToColor {
+func newMandelbrotPixelColorFunction(iterations uint8, p Parameters, sh shader) pixelToColor {
 	return func(vp vpixel) color.Color {
 		c := pixelToCoord(vp, p)
 		z := coordToComplex(c)
@@ -128,7 +128,7 @@ func escapeIteration(z complex128, mi uint8) (i uint8, escaped bool, zFinal comp
 	return i, false, v
 }
 
-func pixelToCoord(vp vpixel, p MandelbrotParameters) Coord {
+func pixelToCoord(vp vpixel, p Parameters) Coord {
 	x := float64(vp.X)/float64(p.Width)*(p.Bounds.Xmax-p.Bounds.Xmin) + (p.Bounds.Xmin)
 	y := float64(vp.Y)/float64(p.Height)*(p.Bounds.Ymax-p.Bounds.Ymin) + (p.Bounds.Ymin)
 	return Coord{x, y}
@@ -138,7 +138,7 @@ func coordToComplex(gc Coord) complex128 {
 	return complex(gc.X, gc.Y)
 }
 
-func complexToMandelbrotColor(z complex128, iterations uint8, p MandelbrotParameters, sh shader) color.Color {
+func complexToMandelbrotColor(z complex128, iterations uint8, p Parameters, sh shader) color.Color {
 	t, e, zf := escapeIteration(z, iterations)
 	return sh(t, iterations, e, p.Contrast, zf)
 }

@@ -11,22 +11,22 @@ func main() {
 	http.HandleFunc("/", handler)
 	log.Println("Listening on localhost:8000")
 	log.Fatal(http.ListenAndServe("localhost:8000", nil))
-
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
-	var bounds = 2
+	r.ParseForm()
+	var x, y float64 = 0, 0
 	var width, height = 1024, 1024
 	var colour = true
 	var supersample = true
 	var logging = false
 	var iterations uint8 = 40
 
-	opts := fractal.MandelbrotParameters{
-		Xmin:        -bounds,
-		Ymin:        -bounds,
-		Xmax:        bounds,
-		Ymax:        bounds,
+	coord := fractal.Coord{X: x, Y: y}
+	bounds := *fractal.CoordsZoomToBounds(coord, 0, 2)
+
+	opts := fractal.Parameters{
+		Bounds:      bounds,
 		Width:       width,
 		Height:      height,
 		Iterations:  iterations,
@@ -36,6 +36,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		Colour:      colour,
 		SuperSample: supersample,
 	}
+
 	log.Printf("Options: %v", opts)
 	fractal.WritePNG(w, opts)
 }

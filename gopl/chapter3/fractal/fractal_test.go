@@ -63,7 +63,7 @@ func TestPixelToCoord(t *testing.T) {
 		Ymin: -100,
 	}
 
-	params := MandelbrotParameters{
+	params := Parameters{
 		Bounds: bounds,
 		Width:  200,
 		Height: 200,
