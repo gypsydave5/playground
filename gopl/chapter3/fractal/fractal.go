@@ -36,8 +36,9 @@ type Coord struct {
 	Y float64
 }
 
-func coordsZoomToBounds(centre Coord, zoom float64, defaultBound float64) *Bounds {
-
+// CoordsZoomToBounds calculates the boundaries of an image based upon a central
+// point, a zoom factor, and a default starting boundary size.
+func CoordsZoomToBounds(centre Coord, zoom float64, defaultBound float64) *Bounds {
 	return &Bounds{
 		Xmax: centre.X + (zoom * defaultBound),
 		Ymax: centre.Y + (zoom * defaultBound),

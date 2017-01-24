@@ -32,15 +32,11 @@ func init() {
 func main() {
 	flag.Parse()
 
-	bounds := fractal.Bounds{
-		Xmin: -bounds,
-		Ymin: -bounds,
-		Xmax: bounds,
-		Ymax: bounds,
-	}
+	centre := fractal.Coord{X: xcoord, Y: ycoord}
+	bounds := fractal.CoordsZoomToBounds(centre, zoom, 2)
 
 	params := fractal.MandelbrotParameters{
-		Bounds:            bounds,
+		Bounds:            *bounds,
 		Width:             width,
 		Height:            height,
 		Iterations:        uint8(iterations),

@@ -87,18 +87,15 @@ func TestCoordToComplex(t *testing.T) {
 }
 
 func TestCoordsZoomToBounds(t *testing.T) {
-	center := Coord{0, 0}
-	zoom := 1.0
+	center := Coord{1, 0.5}
+	zoom := 0.5
 
-	var b = coordsZoomToBounds(center, zoom, 2)
+	var b = *CoordsZoomToBounds(center, zoom, 2)
 
-	expected := Bounds{-2, -2, 2, 2}
+	expected := Bounds{0, -0.5, 2, 1.5}
 
-	if b.Xmax != expected.Xmax {
-		t.Error("Expected", expected.Xmax, "but got", b.Xmax)
-	}
-	if b.Ymax != expected.Ymax {
-		t.Error("Expected", expected.Ymax, "but got", b.Ymax)
+	if b != expected {
+		t.Error("Expected", expected, "but got", b)
 	}
 }
 
@@ -107,7 +104,7 @@ func TestCoordsZoomToBoundsMidCoordsAndZoomOneActsAsIdentity(t *testing.T) {
 	zoom := 1.0
 
 	f := func(defaultBound float64) bool {
-		var b = coordsZoomToBounds(center, zoom, defaultBound)
+		var b = CoordsZoomToBounds(center, zoom, defaultBound)
 		return (b.Xmax == defaultBound) &&
 			(b.Xmin == -defaultBound) &&
 			(b.Ymax == defaultBound) &&
