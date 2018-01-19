@@ -23,7 +23,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	var iterations uint8 = 40
 
 	coord := fractal.Coord{X: x, Y: y}
-	bounds := *fractal.CoordsZoomToBounds(coord, 0, 2)
+	bounds := *fractal.CoordsZoomToBounds(coord, 1, 2)
 
 	opts := fractal.Parameters{
 		Bounds:      bounds,
@@ -37,6 +37,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		SuperSample: supersample,
 	}
 
-	log.Printf("Options: %v", opts)
+	opts = applyOptions(opts, r.Form)
+
+	log.Printf("Options: %+v", opts)
 	fractal.WritePNG(w, opts)
 }
