@@ -8,12 +8,23 @@ import (
 )
 
 func main() {
-	http.HandleFunc("/", handler)
-	log.Println("Listening on localhost:8000")
+	http.HandleFunc("/", router)
+	log.Println("Listening on http://localhost:8000")
 	log.Fatal(http.ListenAndServe("localhost:8000", nil))
 }
 
-func handler(w http.ResponseWriter, r *http.Request) {
+func router(w http.ResponseWriter, r *http.Request) {
+	log.Printf("URL: %+v\n", r.URL.Path)
+
+	switch r.URL.Path {
+	case "/mandlebrot":
+		fractalHandler(w, r)
+	default:
+		viewerHandler(w, r)
+	}
+}
+
+func fractalHandler(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	var x, y float64 = 0, 0
 	var width, height = 1024, 1024
@@ -41,4 +52,9 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("Options: %+v", opts)
 	fractal.WritePNG(w, opts)
+}
+
+func viewerHandler(w http.ResponseWriter, r *http.Request) {
+	t := viewer()
+	t.Execute(w, nil)
 }

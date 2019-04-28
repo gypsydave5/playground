@@ -1,3 +1,9 @@
+package main
+
+import "html/template"
+
+func viewer() *template.Template {
+	return template.Must(template.New("viewer").Parse(`
 <!DOCTYPE html>
 <html>
   <head>
@@ -6,10 +12,11 @@
     <title>MandlebrotZoomer</title>
   </head>
   <body>
-    <img src='http://localhost:8000/?height=512&width=512' id="mandelbrot"></img>
+    <img src='/mandlebrot?height=512&width=512'
+         id="mandelbrot"></img>
   </body>
   <script type="application/javascript" id="">
-    const baseURL = new URL('http://localhost:8000/')
+    const baseURL = new URL('/mandlebrot', window.location.protocol + '//' + window.location.host)
     const settings = {
       height: 512,
       width: 512,
@@ -33,7 +40,6 @@
       const qs = new URLSearchParams(settings)
       e.target.src = baseURL.toString() + "?" + qs.toString()
     })
-
 
 function newIteration (settings) {
   if (settings.iterations === 255) {
@@ -59,3 +65,5 @@ function calculateCoordinates (e, settings) {
 }
   </script>
 </html>
+  `))
+}
