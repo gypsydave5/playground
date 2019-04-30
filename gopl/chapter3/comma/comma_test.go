@@ -2,7 +2,7 @@ package main
 
 import "testing"
 
-// Exercise 3.10
+// Exercise 3.10,3.11
 func TestComma(t *testing.T) {
 	cases := []struct {
 		input string
