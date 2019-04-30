@@ -16,7 +16,7 @@ func TestAnagram(t *testing.T) {
 		{"abc", "123", false},
 		{"abc", "cba", true},
 		{"star", "rats", true},
-		{"🌤⛅️🌥", "🌥⛅️🌤", true},
+		{"🌤r⛅️a🌥", "ar🌥⛅️🌤", true},
 	}
 
 	for _, c := range cases {
