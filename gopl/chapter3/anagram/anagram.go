@@ -2,7 +2,6 @@ package main
 
 import (
 	"strings"
-	"unicode/utf8"
 )
 
 func anagram(s1, s2 string) bool {
@@ -10,14 +9,28 @@ func anagram(s1, s2 string) bool {
 		return false
 	}
 
-	if len(s1) == 0 {
-		return true
+	for _, r := range s1 {
+		i := strings.IndexRune(s2, r)
+		l := runeLength(r)
+		if i == -1 {
+			return false
+		}
+		s2 = s2[:i] + s2[i+l:]
 	}
 
-	r, size := utf8.DecodeRuneInString(s1)
-	i := strings.IndexRune(s2, r)
-	if i == -1 {
-		return false
+	return true
+}
+
+// runeLength returns the length of a rune in bytes
+func runeLength(r rune) int {
+	if r > 65535 {
+		return 4
 	}
-	return anagram(s1[size:], s2[:i]+s2[i+size:])
+	if r > 2047 {
+		return 3
+	}
+	if r > 127 {
+		return 2
+	}
+	return 1
 }
