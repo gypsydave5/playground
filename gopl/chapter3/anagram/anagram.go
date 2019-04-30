@@ -7,10 +7,6 @@ func anagram(s1, s2 string) bool {
 		return false
 	}
 
-	if len(s1) == 0 && len(s2) == 0 {
-		return true
-	}
-
 	for _, r := range s1 {
 		i := strings.IndexRune(s2, r)
 		if i == -1 {
