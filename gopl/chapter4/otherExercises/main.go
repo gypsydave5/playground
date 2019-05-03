@@ -11,6 +11,9 @@ func main() {
 	fmt.Println(string(s[:]))
 	rotate(s[:], -2)
 	fmt.Println(string(s[:]))
+
+	ss := []string{"one", "two", "two", "three", "four", "four", "four", "four", "five"}
+	fmt.Println(dedupe(ss))
 }
 
 // Exercise 4.3
@@ -45,4 +48,16 @@ func rotate(rs []rune, n int) {
 			}
 		}
 	}
+}
+
+// Exercise 4.5: Write an in-place function to eliminate adjacent duplicates in a []string slice.
+func dedupe(ss []string) []string {
+	i := 1
+	for ii := 1; ii < len(ss); ii++ {
+		if ss[ii] != ss[i-1] {
+			ss[i] = ss[ii]
+			i++
+		}
+	}
+	return ss[:i]
 }
