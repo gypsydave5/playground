@@ -16,6 +16,7 @@ func main() {
 	flag.Parse()
 	var b bytes.Buffer
 	b.ReadFrom(os.Stdin)
+
 	switch *algorithm {
 	case "SHA256":
 		fmt.Printf("%x\n", sha256.Sum256(b.Bytes()))

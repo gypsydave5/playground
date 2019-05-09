@@ -10,7 +10,7 @@ func main() {
 	fmt.Println(comma("123456.123456"))
 }
 
-// Exercise 3.10
+// Exercise 3.10, 3.11
 func comma(s string) string {
 	var result bytes.Buffer
 
@@ -28,9 +28,11 @@ func comma(s string) string {
 			result.WriteRune(',')
 		}
 	}
+
 	if len(split) == 2 {
 		result.WriteRune('.')
 		result.WriteString(split[1])
 	}
+
 	return result.String()
 }
