@@ -18,6 +18,11 @@ func main() {
 
 	ss := []string{"one", "two", "two", "three", "four", "four", "four", "four", "five"}
 	fmt.Println(dedupe(ss))
+
+	b := []byte("Hello,         	世 	界")
+	b2 := squishSpace(b)
+	fmt.Println(string(b2))
+	fmt.Println(string(b))
 }
 
 // Exercise 4.3
@@ -88,4 +93,35 @@ func squishSpace(b []byte) []byte {
 		i = i + size
 	}
 	return b[:ii]
+}
+
+// Exercise 4.7: Modify reverse to reverse the characters of a []byte slice that represents a UTF-8-encoded string, in place. Can you do it without allocating new memory?
+
+func reverse2(b []byte) {
+	var er, br rune
+	var bl, el int
+	var bri, bwi int
+	eri, ewi := len(b), len(b)
+
+	br, bl = utf8.DecodeRune(b[bri:])
+	er, el = utf8.DecodeLastRune(b[:eri])
+	eri = eri - el
+	bri = bri + bl
+
+	for bwi < ewi {
+		switch {
+
+		case bl >= ewi-eri:
+			utf8.EncodeRune(b[bwi:bwi+el], er)
+			bwi = bwi + el
+			er, el = utf8.DecodeLastRune(b[:eri])
+			eri = eri - el
+
+		default:
+			utf8.EncodeRune(b[ewi-bl:ewi], br)
+			ewi = ewi - bl
+			br, bl = utf8.DecodeRune(b[bri:])
+			bri = bri + bl
+		}
+	}
 }
