@@ -95,33 +95,33 @@ func squishSpace(b []byte) []byte {
 	return b[:ii]
 }
 
-// Exercise 4.7: Modify reverse to reverse the characters of a []byte slice that represents a UTF-8-encoded string, in place. Can you do it without allocating new memory?
+// Exercise 4.7: Modify reverse to reverse the characters of a []byte slice that
+// represents a UTF-8-encoded string, in place. Can you do it without allocating
+// new memory?
 
 func reverse2(b []byte) {
-	var er, br rune
-	var bl, el int
-	var bri, bwi int
-	eri, ewi := len(b), len(b)
+	beginWriteIndex := 0
+	endWriteIndex := len(b)
 
-	br, bl = utf8.DecodeRune(b[bri:])
-	er, el = utf8.DecodeLastRune(b[:eri])
-	eri = eri - el
-	bri = bri + bl
+	beginRune, beginRuneLen := utf8.DecodeRune(b)
+	endRune, endRuneLen := utf8.DecodeLastRune(b)
+	endReadIndex := endWriteIndex - endRuneLen
+	beginReadIndex := beginWriteIndex + beginRuneLen
 
-	for bwi < ewi {
+	for beginWriteIndex < endWriteIndex {
 		switch {
 
-		case bl >= ewi-eri:
-			utf8.EncodeRune(b[bwi:bwi+el], er)
-			bwi = bwi + el
-			er, el = utf8.DecodeLastRune(b[:eri])
-			eri = eri - el
+		case beginRuneLen >= endWriteIndex-endReadIndex:
+			utf8.EncodeRune(b[beginWriteIndex:beginWriteIndex+endRuneLen], endRune)
+			beginWriteIndex = beginWriteIndex + endRuneLen
+			endRune, endRuneLen = utf8.DecodeLastRune(b[:endReadIndex])
+			endReadIndex = endReadIndex - endRuneLen
 
 		default:
-			utf8.EncodeRune(b[ewi-bl:ewi], br)
-			ewi = ewi - bl
-			br, bl = utf8.DecodeRune(b[bri:])
-			bri = bri + bl
+			utf8.EncodeRune(b[endWriteIndex-beginRuneLen:endWriteIndex], beginRune)
+			endWriteIndex = endWriteIndex - beginRuneLen
+			beginRune, beginRuneLen = utf8.DecodeRune(b[beginReadIndex:])
+			beginReadIndex = beginReadIndex + beginRuneLen
 		}
 	}
 }
