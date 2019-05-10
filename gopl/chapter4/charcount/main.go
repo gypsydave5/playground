@@ -10,24 +10,30 @@ import (
 	"unicode/utf8"
 )
 
+// Exercise 4.8: Modify charcount to count letters, digits, and so on in their
+// Unicode categories, using functions like unicode.IsLetter.
+type category struct {
+	name       string
+	rangeTable *unicode.RangeTable
+}
+
+func (c category) String() string {
+	return c.name
+}
+
 func main() {
 	counts := make(map[rune]int)    // counts of Unicode characters
 	var utflen [utf8.UTFMax + 1]int // count of lengths of UTF-8 encodings
 	invalid := 0                    // count of invalid UTF-8 characters
 
-	// Exercise 4.8: Modify charcount to count letters, digits, and so on in their Unicode categories, using functions like unicode.IsLetter.
-	categoryNames := map[*unicode.RangeTable]string{
-		unicode.Space:  "Space",
-		unicode.Punct:  "Punctuation",
-		unicode.Letter: "Letter",
-		unicode.Digit:  "Digit",
-	}
-
-	categories := map[*unicode.RangeTable]int{
-		unicode.Space:  0,
-		unicode.Punct:  0,
-		unicode.Letter: 0,
-		unicode.Digit:  0,
+	categories := map[category]int{
+		{"Space", unicode.Space}:       0,
+		{"Punctuation", unicode.Punct}: 0,
+		{"Letter", unicode.Letter}:     0,
+		{"Digit", unicode.Digit}:       0,
+		{"UpperCase", unicode.Upper}:   0,
+		{"LowerCase", unicode.Lower}:   0,
+		{"TitleCase", unicode.Title}:   0,
 	}
 
 	in := bufio.NewReader(os.Stdin)
@@ -44,9 +50,9 @@ func main() {
 			invalid++
 			continue
 		}
-		for rt := range categories {
-			if unicode.Is(rt, r) {
-				categories[rt] = categories[rt] + 1
+		for c := range categories {
+			if unicode.Is(c.rangeTable, r) {
+				categories[c] = categories[c] + 1
 			}
 		}
 		counts[r]++
@@ -63,8 +69,8 @@ func main() {
 		}
 	}
 	fmt.Print("\ncategory\tcount\n")
-	for rt, n := range categories {
-		fmt.Printf("%v\t%d\n", categoryNames[rt], n)
+	for c, n := range categories {
+		fmt.Printf("%v\t%d\n", c, n)
 	}
 	if invalid > 0 {
 		fmt.Printf("\n%d invalid UTF-8 characters\n", invalid)
