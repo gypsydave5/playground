@@ -6,19 +6,23 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"time"
 )
 
-const IssuesURL = "https://api.github.com/search/issues"
+const issuesURL = "https://api.github.com/search/issues"
 
+// The IssuesSearchResult from GitHub
 type IssuesSearchResult struct {
 	TotalCount int `json:"total_count"`
 	Items      []*Issue
 }
 
+// Issues from GitHub
 type Issues = []Issue
 
+// An Issue on GitHub
 type Issue struct {
 	Number    int
 	HTMLURL   string `json:"html_url"`
@@ -29,44 +33,81 @@ type Issue struct {
 	Body      string    // in Markdown format
 }
 
+// A User on GitHub
 type User struct {
 	Login   string
 	HTMLURL string `json:"html_url"`
 }
 
-type Create struct {
+// The IssueDetails from GitHub
+type IssueDetails struct {
 	Body  string `json:"body"`
 	Title string `json:"title"`
 }
 
-func CreateIssue(owner, repo, title, issueBody string) (issue Issue, err error) {
-	const RepoIssuesURL = "https://api.github.com/repos/%s/%s/issues"
-	create := Create{
+// DeleteIssue is unimplemented as it is not supported on the current GitHub API
+func DeleteIssue() {
+}
+
+// UpdateIssue on GitHub
+func UpdateIssue(owner, repo string, id int, title, issueBody string) (issue Issue, err error) {
+	const RepoIssuesURL = "https://api.github.com/repos/%s/%s/issues/%d"
+	create := IssueDetails{
 		Body:  issueBody,
 		Title: title,
 	}
 	body, _ := json.Marshal(create)
-
 	b := bytes.NewReader(body)
 
-	resp, err := http.Post(
-		fmt.Sprintf(RepoIssuesURL, owner, repo),
-		"application/json",
-		b,
-	)
+	url := fmt.Sprintf(RepoIssuesURL, owner, repo, id)
+	req, _ := http.NewRequest("PATCH", url, b)
+	token := os.Getenv("GITHUB_TOKEN")
+	req.Header.Add("Authorization", fmt.Sprintf("token %s", token))
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return issue, err
 	}
+
 	defer resp.Body.Close()
+
 	if resp.StatusCode != http.StatusOK {
-		return Issue{}, fmt.Errorf("create issue failed for repo %s/%s failed: %s", owner, repo, resp.Status)
+		return Issue{}, fmt.Errorf("update issue failed for repo %s/%s failed: %s\n\n%s", owner, repo, resp.Status, url)
 	}
 
 	json.NewDecoder(resp.Body).Decode(&issue)
 	return issue, nil
 }
 
-// GetIssues gets all the issues for a particular repo
+// CreateIssue for a repo on GitHub
+func CreateIssue(owner, repo, title, issueBody string) (issue Issue, err error) {
+	const RepoIssuesURL = "https://api.github.com/repos/%s/%s/issues"
+	create := IssueDetails{
+		Body:  issueBody,
+		Title: title,
+	}
+	body, _ := json.Marshal(create)
+	b := bytes.NewReader(body)
+
+	url := fmt.Sprintf(RepoIssuesURL, owner, repo)
+	req, _ := http.NewRequest("POST", url, b)
+	token := os.Getenv("GITHUB_TOKEN")
+	req.Header.Add("Authorization", fmt.Sprintf("token %s", token))
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return issue, err
+	}
+
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusCreated {
+		return Issue{}, fmt.Errorf("create issue failed for repo %s/%s failed: %s\n\n%s", owner, repo, resp.Status, url)
+	}
+
+	json.NewDecoder(resp.Body).Decode(&issue)
+	return issue, nil
+}
+
+// GetIssues for a repo on GitHub
 func GetIssues(owner, repo string) (*Issues, error) {
 	const RepoIssuesURL = "https://api.github.com/repos/%s/%s/issues"
 	resp, err := http.Get(fmt.Sprintf(RepoIssuesURL, owner, repo))
@@ -85,7 +126,7 @@ func GetIssues(owner, repo string) (*Issues, error) {
 	return &result, nil
 }
 
-// GetIssue details
+// GetIssue details from GitHub
 func GetIssue(owner, repo string, id int) (Issue, error) {
 	const repoIssueURL = "https://api.github.com/repos/%s/%s/issues/%d"
 	var result Issue
@@ -104,10 +145,10 @@ func GetIssue(owner, repo string, id int) (Issue, error) {
 	return result, nil
 }
 
-// SearchIssues queries the GitHub issue tracker.
+// SearchIssues on GitHub
 func SearchIssues(terms []string) (*IssuesSearchResult, error) {
 	q := url.QueryEscape(strings.Join(terms, " "))
-	resp, err := http.Get(IssuesURL + "?q=" + q)
+	resp, err := http.Get(issuesURL + "?q=" + q)
 	if err != nil {
 		return nil, err
 	}
