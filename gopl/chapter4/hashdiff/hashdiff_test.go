@@ -35,3 +35,9 @@ func TestHashDiff(t *testing.T) {
 		})
 	}
 }
+
+func BenchmarkHashDiff(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		HashDiff([32]byte{}, [32]byte{31: 1})
+	}
+}
