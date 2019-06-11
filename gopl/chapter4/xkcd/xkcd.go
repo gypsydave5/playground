@@ -5,7 +5,7 @@
 // index. Write a tool xkcd that, using this index, prints the URL and
 // transcript of each comic that matches a search term provided on the command
 // line.
-package main
+package xkcd
 
 import (
 	"encoding/json"
@@ -41,27 +41,25 @@ func (c *Comic) String() string {
 	return fmt.Sprintf("%s\t%s", c.SafeTitle, c.Img)
 }
 
-func main() {
-	term := os.Args[1]
-	comics, err := db()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	cs := search(comics, term)
-	for _, c := range cs {
-		fmt.Println(c)
-	}
+func (c *Comic) Url() string {
+	return fmt.Sprintf("https://xkcd.com/%d", c.Num)
 }
 
-func search(cc Comics, term string) Comics {
+// Search a collection of xkcd Comics for ones which match the search term
+func Search(cc Comics, terms ...string) Comics {
 	var result []*Comic
-	term = strings.ToLower(term)
+	for i := range terms {
+		terms[i] = strings.ToLower(terms[i])
+	}
+
 	for _, c := range cc {
-		if strings.Contains(strings.ToLower(c.SafeTitle), term) {
-			result = append(result, c)
+		match := true
+		for _, term := range terms {
+			match = match &&
+				(strings.Contains(strings.ToLower(c.SafeTitle), term) ||
+					strings.Contains(strings.ToLower(c.Transcript), term))
 		}
-		if strings.Contains(strings.ToLower(c.Transcript), term) {
+		if match {
 			result = append(result, c)
 		}
 	}
@@ -69,10 +67,21 @@ func search(cc Comics, term string) Comics {
 	return result
 }
 
-func db() (Comics, error) {
+// Db of all saved xkcd comics
+func Db() (Comics, error) {
 	var comics Comics
-	db, _ := os.Open(dbFilePath())
-	err := json.NewDecoder(db).Decode(&comics)
+	_, err := os.Stat(dbFilePath())
+	if err != nil {
+		err = FetchAndSaveAll()
+		if err != nil {
+			return comics, err
+		}
+	}
+	db, err := os.Open(dbFilePath())
+	if err != nil {
+		return comics, err
+	}
+	err = json.NewDecoder(db).Decode(&comics)
 	return comics, err
 }
 
@@ -121,12 +130,21 @@ func dbFilePath() string {
 	return filepath.Join(home, ".xkcd")
 }
 
-func fetchAndSaveAll() {
-	max, _ := maxComicID()
+// FetchAndSaveAll comic entries from xkcd, saving them in `.xkcd` in
+// the user directory.
+func FetchAndSaveAll() error {
+	max, err := maxComicID()
+	if err != nil {
+		return err
+	}
 	cs := fetchComics(0, max)
 	file := dbFilePath()
-	db, _ := os.OpenFile(file, os.O_RDWR|os.O_CREATE, 0755)
+	db, err := os.OpenFile(file, os.O_RDWR|os.O_CREATE, 0755)
+	if err != nil {
+		return err
+	}
 	json.NewEncoder(db).Encode(cs)
+	return nil
 }
 
 func maxComicID() (int, error) {
