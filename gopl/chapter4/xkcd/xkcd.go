@@ -38,21 +38,7 @@ type Comic struct {
 type Comics []*Comic
 
 func (c *Comic) String() string {
-	return fmt.Sprintf("Title: %s\nLink: %s\n\n%s\n", c.SafeTitle, c.Img, c.Transcript)
-}
-
-func (cs Comics) String() string {
-	if len(cs) == 0 {
-		return ""
-	}
-
-	var s strings.Builder
-	s.WriteString(cs[0].String())
-	for _, c := range cs[1:] {
-		s.WriteString("%%\n")
-		s.WriteString(c.String())
-	}
-	return s.String()
+	return fmt.Sprintf("%s\t%s", c.SafeTitle, c.Img)
 }
 
 func main() {
@@ -62,7 +48,10 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Println(search(comics, term))
+	cs := search(comics, term)
+	for _, c := range cs {
+		fmt.Println(c)
+	}
 }
 
 func search(cc Comics, term string) Comics {
